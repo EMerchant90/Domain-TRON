@@ -3,6 +3,7 @@
 pragma solidity ^0.8.17;
 
 import {TRC721} from "./TRC721.sol";
+import {ITRC721} from "./interfaces/ITRC721.sol";
 import {TRC721Enumerable} from "./TRC721Enumerable.sol";
 import {EnumerableSet} from "./EnumerableSet.sol";
 import {RecordStorage} from "./RecordStorage.sol";
@@ -243,7 +244,7 @@ contract TWS is TRC721Enumerable, RecordStorage, WhiteList, BookingList
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override {
+    ) public virtual override(ITRC721,TRC721) {
 
         require(_isApprovedOrOwner(_msgSender(), tokenId), "TRC721: transfer caller is not owner nor approved");
 		
@@ -256,7 +257,7 @@ contract TWS is TRC721Enumerable, RecordStorage, WhiteList, BookingList
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override {
+    ) public virtual override(ITRC721,TRC721) {
         safeTransferFrom(from, to, tokenId, "");
     }
 
@@ -266,7 +267,7 @@ contract TWS is TRC721Enumerable, RecordStorage, WhiteList, BookingList
         address to,
         uint256 tokenId,
         bytes memory _data
-    ) public virtual override{
+    ) public virtual override(ITRC721,TRC721){
         require(_isApprovedOrOwner(_msgSender(), tokenId), "TRC721: transfer caller is not owner nor approved");
 		
 		_reset(tokenId);

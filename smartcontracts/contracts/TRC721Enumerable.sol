@@ -3,6 +3,7 @@
 pragma solidity ^0.8.17;
 
 import {TRC721} from "./TRC721.sol";
+import {IERC165} from "./interfaces/IERC165.sol";
 import {ITRC721Enumerable} from "./interfaces/ITRC721Enumerable.sol";
 
 abstract contract TRC721Enumerable is TRC721, ITRC721Enumerable {
@@ -22,7 +23,7 @@ abstract contract TRC721Enumerable is TRC721, ITRC721Enumerable {
      * @dev See {IERC165-supportsInterface}.
      */
     //
-    function supportsInterface(bytes4 interfaceId) public view virtual override(TRC721) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165,TRC721) returns (bool) {
         return interfaceId == type(ITRC721Enumerable).interfaceId || super.supportsInterface(interfaceId);
     }
 

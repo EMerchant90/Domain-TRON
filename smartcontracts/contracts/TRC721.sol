@@ -3,7 +3,6 @@
 pragma solidity ^0.8.17;
 
 import {Context} from "./Context.sol";
-import {ERC165} from "./ERC165.sol";
 import {IERC165} from "./interfaces/IERC165.sol";
 import {ITRC721} from "./interfaces/ITRC721.sol";
 import {ITRC721Metadata} from "./interfaces/ITRC721Metadata.sol";
@@ -11,13 +10,14 @@ import {Address} from "./libraries/Address.sol";
 import {Strings} from "./libraries/Strings.sol";
 import {StringUtil} from "./libraries/StringUtil.sol";
 import {ITRC721Receiver} from "./interfaces/ITRC721Receiver.sol";
+import {ERC165} from "./ERC165.sol";
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[TRC721] Non-Fungible Token Standard, including
  * the Metadata extension, but not including the Enumerable extension, which is available separately as
  * {TRC721Enumerable}.
  */
-contract TRC721 is Context,IERC165, ERC165, ITRC721, ITRC721Metadata {
+contract TRC721 is Context, ERC165, ITRC721, ITRC721Metadata {
     using Address for address;
     using Strings for uint256;
 
@@ -50,7 +50,7 @@ contract TRC721 is Context,IERC165, ERC165, ITRC721, ITRC721Metadata {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165,ERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165,IERC165) returns (bool) {
         return
             interfaceId == type(ITRC721).interfaceId ||
             interfaceId == type(ITRC721Metadata).interfaceId ||
