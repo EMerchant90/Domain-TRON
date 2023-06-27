@@ -10,7 +10,7 @@ const FooterWrapper = styled.div`
     justify-content: center;
     font-size: 14px;
     align-items: center;
-
+   
 
 
 

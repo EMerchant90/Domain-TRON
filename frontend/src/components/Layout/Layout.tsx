@@ -5,7 +5,8 @@ import  Header  from "components/Header/Header"
 import styled from "styled-components"
 
 const LayoutWrapper = styled.div`
-    background-color : #ebedf2;
+    background-color : rgb(241,243,243);
+    min-height : 100vh;
     `
 
 
