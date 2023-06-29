@@ -13,18 +13,7 @@ const Header = () => {
 
     const walletAddress = useTronWalletAddress();
 
-
-
-    const handleCopyToClipboard = () => {
-        // paste wallet address in write text
-        navigator.clipboard.writeText("wallet address")
-            .then(() => {
-                setIsCopied(true);
-            })
-            .catch((error) => {
-                console.error('Error copying to clipboard:', error);
-            });
-    };
+    
 
 
     return (
@@ -41,8 +30,6 @@ const Header = () => {
                       if (window.tronWeb && !window.tronWeb.ready) {
                         toast("Please Unlock Tron Web First");
                       } else if (window.tronWeb && window.tronWeb.ready) {
-                        toast("Applyting state change" + window.tronWeb.defaultAddress.base58);
-                        
                         if (window.tronWeb.defaultAddress.base58) {
                           onUpdateTronWalletAddress(window.tronWeb.defaultAddress.base58)
                         }
@@ -56,14 +43,23 @@ const Header = () => {
                     {(walletAddress && walletAddress.length > 0) &&
                         <div className='wallet-button' >
                             <span id='wallet-address'>{truncateAddress(walletAddress)}</span>
-                            <span className='icon-wrapper'>
-                                <ClipBoardIcon onClick={handleCopyToClipboard} />
+                            <span className='icon-wrapper' onClick={async () => {
+                              navigator.clipboard.writeText(walletAddress)
+                                .then(() => {
+                                  toast("Copied!!");
+                                })
+                                .catch((error) => {
+                                  console.error('Error copying to clipboard:', error);
+                                });
+                            }}>
+                                <ClipBoardIcon  />
                             </span>
-                            <span className='icon-wrapper'>
+                            <span className='icon-wrapper' onClick={() =>{
+                              onUpdateTronWalletAddress(null)
+                            }}>
                                 <ExitIcon />
                             </span>
                         </div>}
-
                 </div>
 
 

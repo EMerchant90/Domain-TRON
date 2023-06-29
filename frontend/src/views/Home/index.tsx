@@ -2,11 +2,11 @@ import Header from 'components/Header/Header'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import DomainData from './components/DomainData/DomainData'
-import TotalDomain from './components/TotalDomains/TotalDomains'
 import { debounce } from 'lodash';
 
 import { TailSpin } from 'react-loader-spinner'
 import { SearchIcon } from 'components/Icons'
+import {useTronWalletAddress} from "../../state/user/hooks";
 
 
 const HomeWrapper = styled.div`
@@ -46,11 +46,11 @@ const HomeWrapper = styled.div`
       font-family: Poppins;
       color: #fff;
       font-size: 20px;
-      border: none;   
+      border: none;
       border-radius: 0 6px 6px 0;
-      cursor: pointer;   
+      cursor: pointer;
     }
-     
+    
   }
 
   & .domain-heading{
@@ -114,18 +114,18 @@ const HomeWrapper = styled.div`
       }
       & p:hover{
         border-color : rgb(56,136,255);
-        color :rgb(56,136,255);   
+        color :rgb(56,136,255);
       }
   }
  
 `
 
 const Home: React.FC = () => {
-
-  const [walletConnected, setWalletConnected] = useState<boolean>(false);
+  
+  const walletAddress = useTronWalletAddress();
+  
   const [searchValue, setSearchValue] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [resultTab  , setResultTab] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const handleSearch = debounce((value: string) => {
     // Perform API search with the value
@@ -169,20 +169,9 @@ const Home: React.FC = () => {
             <SearchIcon/>
         </button>
       </div>
+      
 
-      <div className='search-result'>
-        <p className='ending-text'>
-          Ending with "Search"
-        </p>
-        <div className='result-tabs'>
-          <p className={resultTab === 0 ? "active" : ""} onClick={()=>setResultTab(0)}>Results</p>
-          <p className={resultTab === 1 ? "active" : ""} onClick={()=>setResultTab(1)}>All endings</p>
-        </div>
-      </div>
-
-
-
-      {!walletConnected && <DomainData activeTab={resultTab} setActiveTab={setResultTab}/>}
+      {(walletAddress && walletAddress.length > 0) && <DomainData />}
 
     </HomeWrapper>
   )

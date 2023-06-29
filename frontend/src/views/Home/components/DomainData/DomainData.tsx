@@ -177,18 +177,8 @@ type DomainDataProps = {
     setActiveTab: (activeTab: number) => void;
 }
 
-const DomainData = ({activeTab, setActiveTab}:DomainDataProps) => {
+const DomainData = () => {
 
-    const [activeDomain, setActiveDomain] = useState(0);
-    const [resultTabs, setResultTabs] = useState(0);
-
-    useEffect(() => {
-        setResultTabs(activeTab)
-    },[activeTab])
-
-    useEffect(() => {
-        setActiveTab(resultTabs)
-    },[resultTabs])
 
 
     const domainExtensionData = [
@@ -234,46 +224,8 @@ const DomainData = ({activeTab, setActiveTab}:DomainDataProps) => {
 
     return (
         <DomainDataWrapper>
-
-          { resultTabs === 0 &&  <div className="card-holder">
-                {domainExtensionData.map((item, index) => (
-                    <>
-                        <div className={activeDomain === item.id ? 'active-domain-card' : "domain-card"} onClick={() => setActiveDomain(item.id)} >
-                            <p className="extension-name">.{item.domainName}</p>
-                            <p className="extension-price"><RedCheckIcon /> <span>${item.price}</span>  </p>
-                        </div>
-                        {index === domainExtensionData.length - 1 && <div className="domain-card" onClick={() => setResultTabs(1)} >
-                            <p className="forward-icon"><ForwardArrowIcon /> </p>
-                            <p className="forward-icon-text">All Endings </p>
-                        </div>
-                        }
-                    </>
-                ))}
-            </div>}
-
-
-         {  resultTabs === 0 &&  <div className="extension-details-box">
-                <div className="extension-details">
-                    <div className="detail-card">
-                        <RedCheckIcon />
-                        <div className="user-domain">
-                            <p>name<span>.{domainExtensionData[activeDomain].domainName}
-                            </span></p>
-                            <p className="status">Available</p>
-                        </div>
-                    </div>
-
-                    <div className="flex-row">
-                        <p className="domain-extension-price">
-                            ${domainExtensionData[activeDomain].price}
-                        </p>
-                        <HeartIcon />
-                        <button className="mint-button">Mint</button>
-                    </div>
-                </div>
-            </div>}
-
-            {(resultTabs === 1) && <div className="extension-details-box">
+          
+             <div className="extension-details-box">
                 {domainExtensionData.map((item, index) => (
                     <div className="extension-details">
                         <div className="detail-card">
@@ -289,13 +241,12 @@ const DomainData = ({activeTab, setActiveTab}:DomainDataProps) => {
                             <p className="domain-extension-price">
                                 ${item.price}
                             </p>
-                            <HeartIcon />
                             <button className="mint-button">Mint</button>
                         </div>
                     </div>
                 ))}
 
-            </div>}
+            </div>
         </DomainDataWrapper>)
 
 }

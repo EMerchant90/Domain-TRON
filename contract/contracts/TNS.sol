@@ -20,6 +20,8 @@ contract TNS is TRC721Enumerable, Ownable
 	
     mapping(uint256 => string) private _tlds;
 	
+	string[] public tldsList;
+	
 	string private _nftBaseURI = "";
 	
 	uint256 private _price = 1;
@@ -33,6 +35,10 @@ contract TNS is TRC721Enumerable, Ownable
 	
 	constructor() TRC721("TNS", "TNS") {
 	
+	}
+	
+	function getAllTlds() external view returns (string[] memory) {
+		return tldsList;
 	}
 	
     function isApprovedOrOwner(address account, uint256 tokenId) external view returns(bool)  {
@@ -60,8 +66,10 @@ contract TNS is TRC721Enumerable, Ownable
     }
 	
 	function setTLD(string memory _tld) public onlyOwner {
+		require(isTLD(_tld) == false, "Top level domain already exist");
         uint256 tokenId = genTokenId(_tld);
 		_tlds[tokenId] = _tld;
+		tldsList.push(_tld);
     }
 	
 	function isTLD(string memory _tld) public view returns (bool) {
@@ -107,37 +115,40 @@ contract TNS is TRC721Enumerable, Ownable
 
 	function buyDomain(string memory domain, string memory tld) external payable
 	{
-		require(bytes(tld).length != 0, "Top level domain must be non-empty");
+	
+//		require(msg.value >= _price, "Insufficient Token or Token value sent is not correct");
 		
 		require(isTLD(tld) == true, "Top level domain not exist");
 		
-		require(StringUtil.dotCount(domain) == 0, "Domains cannot contain dot");
-		
 		uint256 _length = bytes(domain).length;
-		
-		require(_length != 0, "Domain must be non-empty");
-		
-		require(_length >= 2, "Domain requires at least 2 characters");
-		
-		require(msg.value >= _price, "Insufficient Token or Token value sent is not correct");
+
+		require(_length > 0, "Domain must be non-empty");
+
 		
 		string memory _domain = StringUtil.toLower(domain);
-		
+
 		string memory _tld = StringUtil.toLower(tld);
 		
 		_domain = string(abi.encodePacked(_domain, ".", _tld));
-		
+
 		uint256 tokenId = genTokenId(_domain);
-		
+
 		require (!_exists(tokenId), "Domain already exists");
-		
+
 	   _safeMint(msg.sender, tokenId);
-	   
+
 	   _setTokenURI(tokenId, _domain);
-	   
+
 	   emit NewURI(tokenId, _domain);
     }
 	
+	function mint(address to, uint256 tokenId) public onlyOwner {
+		_safeMint(to, tokenId);
+	}
+	
+	function simpleMint(address to, uint256 tokenId) public onlyOwner {
+		_mint(to, tokenId);
+	}
 	/**
      * Begin: System
      */
