@@ -1,3 +1,7 @@
+//SPDX-License-Identifier:MIT
+
+pragma solidity ^0.8.18;
+
 import {ITRC721} from "./ITRC721.sol";
 
 interface ITRC721Enumerable is ITRC721 {

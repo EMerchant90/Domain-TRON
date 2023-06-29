@@ -1,6 +1,6 @@
 
 //SPDX-License-Identifier:MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.18;
 
 import {TRC721} from "./TRC721.sol";
 import {IERC165} from "./interfaces/IERC165.sol";

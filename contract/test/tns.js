@@ -1,20 +1,15 @@
 var wait = require('./helpers/wait')
 var chalk = require('chalk')
-var TWS = artifacts.require("./TWS.sol");
+var TNS = artifacts.require("./TNS.sol");
 
-let tws
+let tnsContract
 
 
 
-contract('TWS', function (accounts) {
+contract('TNS', function (accounts) {
 
 before(async function () {
-
-  tws = await TWS.deployed()
-  if(accounts.length < 3) {
-    // Set your own accounts if you are not using Tron Quickstart
-
-  }
+  tnsContract = await TNS.deployed()
 })
 
 it("should verify that there are at least three available accounts", async function () {
@@ -25,51 +20,26 @@ it("should verify that there are at least three available accounts", async funct
 })
 
 it("should verify that the contract has been deployed by accounts[0]", async function () {
-  assert.equal(await tws.owner(), tronWeb.address.toHex(accounts[0]))
+  assert.equal(await tnsContract.owner(), tronWeb.address.toHex(accounts[0]))
 });
 
-it("should set top level domain \"eth\" ",async function(){
-  let tx = await tws.setTLD("eth")  
-  tx = await tws.isTLD("eth")  
-  expect(tx).to.equal(true)    
+it("should set top level domain \"trx\" ",async function(){
+  let tx = await tnsContract.setTLD("trx")
+  tx = await tnsContract.isTLD("trx")
+  expect(tx).to.equal(true)
 })
 
-it("should register a domain on top of tld", async function () {
-
-  let tx = await tws.setTLD("eth")  
-  tx = await tws.registerDomain(tronWeb.address.toHex(accounts[0]),"saffi","eth");
-  tx = await tws.registerDomain(tronWeb.address.toHex(accounts[0]),"ali","eth");
+it("should buy a domain on top of tld", async function () {
+    let tx = await tnsContract.setTLD("trx")
+    const options = {value: 1}
+    tx = await tnsContract.buyDomain("adeel","trx", options);
+    ownerAddress = await tnsContract.getOwner("adeel.trx");
+    expect(ownerAddress).to.equal(tronWeb.address.toHex(accounts[0]));
 });
-
-
-it("should get owner of domain via tokenID",async function(){
-
-  let tx = await tws.setTLD("eth")  
-  tx = await tws.registerDomain(tronWeb.address.toHex(accounts[0]),"saffi","eth");
-  ownerAddress = await tws.getOwner("saffi.eth");
-  expect(ownerAddress).to.equal(tronWeb.address.toHex(accounts[0]));
-})
-
-
 
 it("should get price",async function(){
-  let price = await tws.getPrice()  
+  let price = await tnsContract.getPrice()
   expect(price.toNumber()).to.equal(1)
 })
-
-
-it("should buy Domain",async function(){
-
-  let tx = await tws.setBookingListActive()  
-   tx = await tws.setWhiteListActive()  
-   tx = await tws.setTLD("eth")   
-  tx = await tws.registerDomain(tronWeb.address.toHex(accounts[0]),"saffi","eth");
-  tx = await tws.addWhiteList(tronWeb.address.toHex(accounts[0]),1);
-  const options = {value: 1}
-  tx = await tws.buyDomain("alikhan","eth",options)  
-  
-})
-
-
 
 })

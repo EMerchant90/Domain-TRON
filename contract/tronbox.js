@@ -1,51 +1,41 @@
-const port = process.env.HOST_PORT || 9090
-
+require('dotenv').config();
+console.info("--- tronbox.js ---", process.env.PRIVATE_KEY);
 module.exports = {
   networks: {
+      development: {
+          privateKey: process.env.PRIVATE_KEY,
+          userFeePercentage: 100, // The percentage of resource consumption ratio.
+          feeLimit: 100000000, // The TRX consumption limit for the deployment and trigger, unit is SUN
+          fullHost: "http://127.0.0.1:9090",
+
+          network_id: '9'
+      },
     mainnet: {
-      // Don't put your private key here:
-      privateKey: process.env.PRIVATE_KEY_MAINNET,
-      /*
-Create a .env file (it must be gitignored) containing something like
-
-  export PRIVATE_KEY_MAINNET=4E7FEC...656243
-
-Then, run the migration with:
-
-  source .env && tronbox migrate --network mainnet
-
-      */
-      userFeePercentage: 100,
+      privateKey: process.env.PRIVATE_KEY,
       feeLimit: 1000 * 1e6,
       fullHost: 'https://api.trongrid.io',
       network_id: '1'
     },
     shasta: {
-      privateKey: process.env.PRIVATE_KEY_SHASTA,
-      userFeePercentage: 50,
+      privateKey: process.env.PRIVATE_KEY,
       feeLimit: 1000 * 1e6,
       fullHost: 'https://api.shasta.trongrid.io',
       network_id: '2'
     },
     nile: {
-      privateKey: process.env.PRIVATE_KEY_NILE,
-      userFeePercentage: 100,
+      privateKey: process.env.PRIVATE_KEY,
       feeLimit: 1000 * 1e6,
       fullHost: 'https://api.nileex.io',
       network_id: '3'
     },
-    development: {
-      // For tronbox/tre docker image
-      privateKey: '0000000000000000000000000000000000000000000000000000000000000001',
-      userFeePercentage: 0,
-      feeLimit: 1000 * 1e6,
-      fullHost: 'http://127.0.0.1:' + port,
-      network_id: '9'
-    },
+
     compilers: {
       solc: {
-        // version: '0.5.4'
-        version:'0.8.18'
+        version:'0.8.18',
+        optimizer: {
+            enabled: true,
+            runs: 200
+        }
 
       }
     }

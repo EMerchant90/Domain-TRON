@@ -1,3 +1,4 @@
+import 'react-toastify/dist/ReactToastify.css';
 import BigNumber from 'bignumber.js'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
@@ -8,6 +9,8 @@ import { NextPage } from 'next'
 import { Updaters } from '..'
 import Providers from '../Providers'
 import GlobalStyle from "../style/Global";
+import {ToastContainer} from "react-toastify";
+
 // This config is required for number formatting
 BigNumber.config({
   EXPONENTIAL_AT: 1000,
@@ -38,6 +41,7 @@ function MyApp(props: AppProps) {
         <title>Tron Marketplace</title>
       </Head>
       <Providers store={store}>
+        <ToastContainer />
         <GlobalHooks />
         <Updaters />
         <GlobalStyle />

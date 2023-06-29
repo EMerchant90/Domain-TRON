@@ -1,19 +1,20 @@
 import { createReducer } from '@reduxjs/toolkit'
-import {  hidePhishingWarningBanner } from './actions'
+import {  updateTronWalletAddress } from './actions'
 const currentTimestamp = () => new Date().getTime()
 
 export interface UserState {
 
-  hideTimestampPhishingWarningBanner: number
+  tronWalletAddress: string | null
 }
 
 export const initialState: UserState = {
-  hideTimestampPhishingWarningBanner: null,
+  tronWalletAddress: null,
 }
 
 export default createReducer(initialState, (builder) =>
   builder
-    .addCase(hidePhishingWarningBanner, (state) => {
-      state.hideTimestampPhishingWarningBanner = currentTimestamp()
+    .addCase(updateTronWalletAddress, (state,  { payload: { tronWalletAddress }} ) => {
+      console.info("Update tron wllet address", tronWalletAddress)
+      state.tronWalletAddress = tronWalletAddress
     }),
 )

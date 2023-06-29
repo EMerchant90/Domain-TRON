@@ -1,5 +1,5 @@
 //SPDX-License-Identifier:MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.18;
 library Strings {
     bytes16 private constant _HEX_SYMBOLS = "0123456789abcdef";
 

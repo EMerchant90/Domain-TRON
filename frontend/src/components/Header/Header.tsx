@@ -2,7 +2,75 @@ import styled from "styled-components"
 import Link from 'next/link';
 import { ClipBoardIcon, ExitIcon, Logo } from 'components/Icons'
 import { useState } from "react";
+import {useTronWalletAddress, useUserActionHandlers} from "../../state/user/hooks";
+import {toast} from "react-toastify";
+import truncateAddress from "../../utils/truncateAddress";
 
+
+const Header = () => {
+    const { onUpdateTronWalletAddress } = useUserActionHandlers();
+    const [isCopied, setIsCopied] = useState<boolean>(false);
+
+    const walletAddress = useTronWalletAddress();
+
+
+
+    const handleCopyToClipboard = () => {
+        // paste wallet address in write text
+        navigator.clipboard.writeText("wallet address")
+            .then(() => {
+                setIsCopied(true);
+            })
+            .catch((error) => {
+                console.error('Error copying to clipboard:', error);
+            });
+    };
+
+
+    return (
+        <HeaderWrapper>
+            <div className="bg-wrap">
+
+                <div className="logo-wrapper">
+                    <Logo/>
+                </div>
+
+                <div>
+
+                    {(!walletAddress || walletAddress.length === 0) && <button className='wallet-button' onClick={() => {
+                      if (window.tronWeb && !window.tronWeb.ready) {
+                        toast("Please Unlock Tron Web First");
+                      } else if (window.tronWeb && window.tronWeb.ready) {
+                        toast("Applyting state change" + window.tronWeb.defaultAddress.base58);
+                        
+                        if (window.tronWeb.defaultAddress.base58) {
+                          onUpdateTronWalletAddress(window.tronWeb.defaultAddress.base58)
+                        }
+                      } else{
+                        toast("Please Install Tron Web Extension.");
+                      }
+                    }}>
+                        <span >Connect </span>
+                    </button>}
+
+                    {(walletAddress && walletAddress.length > 0) &&
+                        <div className='wallet-button' >
+                            <span id='wallet-address'>{truncateAddress(walletAddress)}</span>
+                            <span className='icon-wrapper'>
+                                <ClipBoardIcon onClick={handleCopyToClipboard} />
+                            </span>
+                            <span className='icon-wrapper'>
+                                <ExitIcon />
+                            </span>
+                        </div>}
+
+                </div>
+
+
+            </div>
+        </HeaderWrapper>
+    )
+}
 const HeaderWrapper = styled.div`
     width : 100%;
     background-color : rgb(241,243,243);
@@ -34,7 +102,7 @@ const HeaderWrapper = styled.div`
         font-weight : 500;
         font-family : 'Roboto', sans-serif;
             &:hover{
-                color :#df2b20; 
+                color :#df2b20;
                 border-bottom : 2px solid #df2b20;
             }
     }
@@ -50,7 +118,7 @@ const HeaderWrapper = styled.div`
         border-radius: 30px;
         border: 2px solid transparent;
         font-weight: 700;
-        font-size: 16px;
+        font-size: 14px;
         width: fit-content;
         display: flex;
         align-items: center;
@@ -103,66 +171,5 @@ const HeaderWrapper = styled.div`
  
 
 `
-
-const Header = () => {
-    const [walletConnected, setWalletConnected] = useState<boolean>(false);
-    const [isCopied, setIsCopied] = useState<boolean>(false);
-
-
-
-
-    const handleCopyToClipboard = () => {
-        // paste wallet address in write text
-        navigator.clipboard.writeText("wallet address")
-            .then(() => {
-                setIsCopied(true);
-            })
-            .catch((error) => {
-                console.error('Error copying to clipboard:', error);
-            });
-    };
-
-
-    return (
-        <HeaderWrapper>
-            <div className="bg-wrap">
-
-                <div className="logo-wrapper">
-                    <Logo/>
-                </div>
-                {/* <div className="links">
-                    <Link href="" className="link">
-                        <p className="link">
-                            Home
-                        </p>
-                    </Link>
-
-                </div> */}
-
-                <div>
-
-                    {!walletConnected && <button className='wallet-button'>
-                        {/* <img src='https://trxdomains.xyz/images/tronlink.svg' alt='tron-logo' /> */}
-                        <span >Connect </span>
-                    </button>}
-
-                    {walletConnected &&
-                        <div className='wallet-button' >
-                            <span id='wallet-address'>Wallet adress</span>
-                            <span className='icon-wrapper'>
-                                <ClipBoardIcon onClick={handleCopyToClipboard} />
-                            </span>
-                            <span className='icon-wrapper'>
-                                <ExitIcon />
-                            </span>
-                        </div>}
-
-                </div>
-
-
-            </div>
-        </HeaderWrapper>
-    )
-}
 
 export default Header
