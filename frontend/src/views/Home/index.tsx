@@ -284,7 +284,7 @@ const Home: React.FC = () => {
             visible={true}
           />
           :
-          <DomainData domainsInfo={domainsInfo} />
+          <DomainData domainsInfo={domainsInfo} handleSearch={handleSearch} searchValue={searchValue}/>
         
       }
 

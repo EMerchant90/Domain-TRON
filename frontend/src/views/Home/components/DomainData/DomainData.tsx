@@ -6,17 +6,20 @@ import {useTronWalletAddress} from "../../../../state/user/hooks";
 import {toast} from "react-toastify";
 import tnsAbi from "../../../../config/abi/tns.json";
 import {TNS_CONTRACT_ADDRESS} from "../../../../config/constants";
-import {AiOutlineCheckCircle} from "react-icons/ai";
+import {ThreeDots} from "react-loader-spinner";
 
 
 interface DomainDataProps {
   domainsInfo: IDomainInfo[]
+  handleSearch: Function
+  searchValue: string
 }
 
-const DomainData = ({domainsInfo}) => {
+const DomainData = ({domainsInfo, handleSearch, searchValue}) => {
   
   const walletAddress = useTronWalletAddress();
   
+  const [mintDomainIndexInProgress, setMintDomainIndexInProgress] = useState(-1)
   return (
         <DomainDataWrapper>
           
@@ -28,7 +31,6 @@ const DomainData = ({domainsInfo}) => {
                       className="extension-details">
                         <div className="detail-card">
                             <RedCheckIcon />
-                            {/*<AiOutlineCheckCircle/>*/}
                             <div className="user-domain">
                                 <p>name<span>.{item.domain}
                                 </span></p>
@@ -42,6 +44,19 @@ const DomainData = ({domainsInfo}) => {
                             <p className="domain-extension-price">
                                 {item.price}
                             </p>
+                          {
+                            mintDomainIndexInProgress === index ?
+                              <ThreeDots
+                                height="50"
+                                width="50"
+                                radius="9"
+                                color="#4fa94d"
+                                ariaLabel="three-dots-loading"
+                                wrapperStyle={{
+                                  paddingLeft: '10px',
+                                }}
+                                visible={true}/>
+                              :
                             <button className={item.isAvailable ? "mint-button" : "already-minted-button"} disabled={!item.isAvailable}
                             onClick={async () => {
                               try {
@@ -52,23 +67,24 @@ const DomainData = ({domainsInfo}) => {
                                   throw new Error('Need to connect wallet first before mint.')
                                 }
                                 debugger;
-                                
+                                setMintDomainIndexInProgress(index)
                                 const tronWeb = window.tronWeb
                                 let tnsContract = await tronWeb.contract(tnsAbi, TNS_CONTRACT_ADDRESS);
-                                debugger;
                                 
-                                const tlds = await tnsContract.buyDomain(item.name, item.tld).send({
+                                const tx = await tnsContract.buyDomain(item.name, item.tld).send({
                                   value: 10000000,
+                                  shouldPollResponse:true,
                                 });
-                                debugger;
-                                console.log(tlds)
+                                handleSearch(searchValue)
                               } catch (error) {
-                                debugger;
-                                
                                 console.error(error)
+                              } finally {
+                                setMintDomainIndexInProgress(-1)
                               }
                             }}
-                            >{item.isAvailable ? "Mint" : "Minted" }</button>
+                            >
+                              {item.isAvailable ? "Mint" : "Minted" }</button>
+                          }
                         </div>
                     </div>
                 )})}
