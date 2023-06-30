@@ -1,6 +1,68 @@
 import { ForwardArrowIcon, HeartIcon, RedCheckIcon } from "components/Icons";
 import styled from "styled-components";
 import { useEffect, useState } from "react";
+import {IDomainInfo} from "../../index";
+import {useTronWalletAddress} from "../../../../state/user/hooks";
+import {toast} from "react-toastify";
+
+
+interface DomainDataProps {
+  domainsInfo: IDomainInfo[]
+}
+
+const DomainData = ({domainsInfo}) => {
+  
+  const walletAddress = useTronWalletAddress();
+  
+  return (
+        <DomainDataWrapper>
+          
+             <div className="extension-details-box">
+                {domainsInfo.map((item, index) => {
+                    return (
+                    <div
+                      key={index}
+                      className="extension-details">
+                        <div className="detail-card">
+                            <RedCheckIcon />
+                            <div className="user-domain">
+                                <p>name<span>.{item.domain}
+                                </span></p>
+                                <p className="status">{
+                                    item.isAvailable ? "Available" : "Not Available"
+                                }</p>
+                            </div>
+                        </div>
+
+                        <div className="flex-row">
+                            <p className="domain-extension-price">
+                                {item.price}
+                            </p>
+                            <button className="mint-button" disabled={!item.isAvailable}
+                            onClick={async () => {
+                              try {
+                                if(!walletAddress || walletAddress.length === 0) {
+                                  toast('Please Connect Your Wallet First', {
+                                    type: 'error'
+                                  })
+                                  throw new Error('Need to connect wallet first before mint.')
+                                }
+                                
+                                const tronWeb = window.tronWeb
+                                // const tnsContract =
+                              } catch (error) {
+                                console.error(error)
+                              }
+                            }}
+                            >Mint</button>
+                        </div>
+                    </div>
+                )})}
+
+            </div>
+        </DomainDataWrapper>)
+
+}
 
 const DomainDataWrapper = styled.div`
     width : 100%;
@@ -172,83 +234,5 @@ const DomainDataWrapper = styled.div`
     }
 
 `
-type DomainDataProps = {
-    activeTab: number;
-    setActiveTab: (activeTab: number) => void;
-}
-
-const DomainData = () => {
-
-
-
-    const domainExtensionData = [
-        {
-            domainName: 'wallet',
-            price: '40',
-            id: 0,
-        },
-        {
-            domainName: 'x',
-            price: '40',
-            id: 1,
-
-        },
-        {
-            domainName: 'polygon',
-            price: '40',
-
-            id: 2,
-        },
-        {
-            domainName: 'dao',
-            price: '40',
-            id: 3,
-        },
-        {
-            domainName: '888',
-            price: '40',
-            id: 4,
-        },
-        {
-            domainName: 'zil',
-            price: '40',
-            id: 5,
-        },
-        {
-            domainName: 'bitcoin',
-            id: 6,
-            price: '400',
-        },
-    ]
-
-
-    return (
-        <DomainDataWrapper>
-          
-             <div className="extension-details-box">
-                {domainExtensionData.map((item, index) => (
-                    <div className="extension-details">
-                        <div className="detail-card">
-                            <RedCheckIcon />
-                            <div className="user-domain">
-                                <p>name<span>.{item.domainName}
-                                </span></p>
-                                <p className="status">Available</p>
-                            </div>
-                        </div>
-
-                        <div className="flex-row">
-                            <p className="domain-extension-price">
-                                ${item.price}
-                            </p>
-                            <button className="mint-button">Mint</button>
-                        </div>
-                    </div>
-                ))}
-
-            </div>
-        </DomainDataWrapper>)
-
-}
 
 export default DomainData;

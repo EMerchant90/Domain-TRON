@@ -14,7 +14,6 @@ export const initialState: UserState = {
 export default createReducer(initialState, (builder) =>
   builder
     .addCase(updateTronWalletAddress, (state,  { payload: { tronWalletAddress }} ) => {
-      console.info("Update tron wllet address", tronWalletAddress)
       state.tronWalletAddress = tronWalletAddress
     }),
 )

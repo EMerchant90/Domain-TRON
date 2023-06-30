@@ -9,7 +9,7 @@
     "compile": "tronbox compile",
     "test": "tronbox test",
     "test-network": "docker run -it -p 9090:9090 --rm --name tron -e \"mnemonic=maid lock awkward october curtain renew eyebrow access gasp essay lonely buyer\" tronbox/tre",
-    "migrate": "tronbox migrate"
+    "migrate": "tronbox migrate --reset"
   },
   "license": "MIT",
   "devDependencies": {

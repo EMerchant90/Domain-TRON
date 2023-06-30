@@ -32,13 +32,13 @@ function MyApp(props: AppProps) {
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=5, minimum-scale=1, viewport-fit=cover"
         />
-        <meta name="description" content="Tron Naming Service Template" />
+        <meta name="description" content="TNS as NFT" />
         <meta name="theme-color" content="#ffffff" />
         <meta name="twitter:image" content="" />
-        <meta name="twitter:description" content="Tron Assignment" />
+        <meta name="twitter:description" content="TNS as NFT" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Tron Assignment" />
-        <title>Tron Marketplace</title>
+        <meta name="twitter:title" content="TNS" />
+        <title>Tron Naming Service</title>
       </Head>
       <Providers store={store}>
         <GlobalHooks />

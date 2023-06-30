@@ -6,7 +6,7 @@ import storage from 'redux-persist/lib/storage'
 import user from './user/reducer'
 import tlds from './tlds/reducer'
 
-const PERSISTED_KEYS: string[] = ['user','tlds']
+const PERSISTED_KEYS: string[] = ['tlds']
 
 const persistConfig = {
   key: 'primary',

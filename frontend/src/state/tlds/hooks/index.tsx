@@ -38,15 +38,9 @@ export function useSyncTLDs() {
           privateKey: '67162e5b6c29261423f731aff081bb65174e289343a779e5ae0695ca16444037',
         })
         
-        debugger;
         let tnsContract = await tronWeb.contract(tnsAbi, TNS_CONTRACT_ADDRESS);
-        debugger;
-        
         const tlds = await tnsContract.getAllTlds().call();
-        
         console.info("all tlds", tlds)
-        debugger;
-        
         dispatch(updateTLDs({tlds}))
       } catch (e) {
         console.error(e)

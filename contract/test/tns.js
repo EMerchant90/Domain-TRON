@@ -26,6 +26,13 @@ it("should get price",async function(){
     let price = await tnsContract.getPrice()
     expect(price.toNumber()).to.equal(1)
 })
+
+it("should get domains availability",async function(){
+    const domains = ["adeel.trx","adeel2.trx","adeel3.trx"]
+    const availability = await tnsContract.getDomainsAvailibility(domains)
+    console.log("info",availability)
+    expect(availability.length).to.equal(domains.length)
+})
 it("should buy a domain on top of tld", async function () {
     const options = {value: 1}
     let tx = await tnsContract.buyDomain("adeel2","trx", options);

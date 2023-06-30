@@ -112,7 +112,14 @@ contract TNS is TRC721Enumerable, Ownable
         _tokenURIs[tokenId] = _tokenURI;
     }
 	
-
+	function getDomainsAvailibility(string[] memory domains) external view returns (bool[] memory) {
+		bool[] memory domainsAvailibility = new bool[](domains.length);
+		for (uint i =0; i < domains.length; i++) {
+			uint256 tokenId = genTokenId(domains[i]);
+			domainsAvailibility[i] = (!_exists(tokenId));
+		}
+		return domainsAvailibility;
+	}
 	function buyDomain(string memory domain, string memory tld) external payable
 	{
 	
@@ -142,13 +149,6 @@ contract TNS is TRC721Enumerable, Ownable
 	   emit NewURI(tokenId, _domain);
     }
 	
-	function mint(address to, uint256 tokenId) public onlyOwner {
-		_safeMint(to, tokenId);
-	}
-	
-	function simpleMint(address to, uint256 tokenId) public onlyOwner {
-		_mint(to, tokenId);
-	}
 	/**
      * Begin: System
      */

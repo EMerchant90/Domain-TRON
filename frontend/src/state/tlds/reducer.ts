@@ -13,7 +13,6 @@ export const initialState: UserState = {
 export default createReducer(initialState, (builder) =>
   builder
     .addCase(updateTLDs, (state,  { payload: { tlds }} ) => {
-      console.info("Update tlds", tlds)
       state.tlds = tlds
     }),
 )

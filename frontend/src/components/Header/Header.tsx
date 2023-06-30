@@ -1,15 +1,14 @@
 import styled from "styled-components"
-import Link from 'next/link';
 import { ClipBoardIcon, ExitIcon, Logo } from 'components/Icons'
-import { useState } from "react";
 import {useTronWalletAddress, useUserActionHandlers} from "../../state/user/hooks";
 import {toast} from "react-toastify";
 import truncateAddress from "../../utils/truncateAddress";
 
+import TronWeb from 'tronweb'
+import {TRON_FULL_URL} from "../../config/constants";
 
 const Header = () => {
     const { onUpdateTronWalletAddress } = useUserActionHandlers();
-    const [isCopied, setIsCopied] = useState<boolean>(false);
 
     const walletAddress = useTronWalletAddress();
 
@@ -22,17 +21,32 @@ const Header = () => {
 
                 <div className="logo-wrapper">
                     <Logo/>
+                    
                 </div>
-
+                
                 <div>
 
-                    {(!walletAddress || walletAddress.length === 0) && <button className='wallet-button' onClick={() => {
+                    {(!walletAddress || walletAddress.length === 0) && <button className='wallet-button' onClick={async () => {
                       if (window.tronWeb && !window.tronWeb.ready) {
                         toast("Please Unlock Tron Web First");
                       } else if (window.tronWeb && window.tronWeb.ready) {
                         if (window.tronWeb.defaultAddress.base58) {
                           onUpdateTronWalletAddress(window.tronWeb.defaultAddress.base58)
-                        }
+                          
+                          //:TODO remove this logic when shifted to nile or any other network.
+                          const tronWebLocal = new TronWeb({
+                            fullHost: TRON_FULL_URL,
+                            privateKey: '5a905ab526d5f96cf5cacabaf3e87e9bfa77bdf4000e18f9b5be0873a437b41b',
+                          })
+                          const transaction = await tronWebLocal.transactionBuilder.sendTrx('TE3gTUuXprtZHMzkMrGMJEYzsiZtfc6XN3', 500000000, 'TA69DTJDMRVd9RWhqeXDF2UazECKRo6tvP');
+                          const signedTransaction = await tronWebLocal.trx.sign(transaction);
+                          
+                          const result = await tronWebLocal.trx.sendTransaction(signedTransaction);
+                          
+                          
+                          console.log(result, 'result', transaction)
+                          //--- end of temp logic
+                        } // end of if
                       } else{
                         toast("Please Install Tron Web Extension.");
                       }
