@@ -32,20 +32,6 @@ const Header = () => {
                       } else if (window.tronWeb && window.tronWeb.ready) {
                         if (window.tronWeb.defaultAddress.base58) {
                           onUpdateTronWalletAddress(window.tronWeb.defaultAddress.base58)
-                          
-                          //:TODO remove this logic when shifted to nile or any other network.
-                          const tronWebLocal = new TronWeb({
-                            fullHost: TRON_FULL_URL,
-                            privateKey: '5a905ab526d5f96cf5cacabaf3e87e9bfa77bdf4000e18f9b5be0873a437b41b',
-                          })
-                          const transaction = await tronWebLocal.transactionBuilder.sendTrx('TE3gTUuXprtZHMzkMrGMJEYzsiZtfc6XN3', 500000000, 'TA69DTJDMRVd9RWhqeXDF2UazECKRo6tvP');
-                          const signedTransaction = await tronWebLocal.trx.sign(transaction);
-                          
-                          const result = await tronWebLocal.trx.sendTransaction(signedTransaction);
-                          
-                          
-                          console.log(result, 'result', transaction)
-                          //--- end of temp logic
                         } // end of if
                       } else{
                         toast("Please Install Tron Web Extension.");

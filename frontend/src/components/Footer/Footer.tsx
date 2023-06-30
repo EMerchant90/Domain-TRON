@@ -19,7 +19,7 @@ const FooterWrapper = styled.div`
 const Footer =()=>{
     return(
         <FooterWrapper>
-            Copyright © 2022 Tron Web3 Domains. All Rights Reserved.
+            Copyright © 2023 TronDao. All Rights Reserved.
         </FooterWrapper>
 
     )
