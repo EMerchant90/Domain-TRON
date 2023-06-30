@@ -4,8 +4,9 @@ import { useDispatch } from 'react-redux'
 import { persistReducer, persistStore } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 import user from './user/reducer'
+import tlds from './tlds/reducer'
 
-const PERSISTED_KEYS: string[] = ['user']
+const PERSISTED_KEYS: string[] = ['user','tlds']
 
 const persistConfig = {
   key: 'primary',
@@ -17,6 +18,7 @@ const persistedReducer = persistReducer(
   persistConfig,
   combineReducers({
     user,
+    tlds,
   }),
 )
 

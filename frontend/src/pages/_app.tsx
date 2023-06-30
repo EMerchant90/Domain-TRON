@@ -8,6 +8,7 @@ import { NextPage } from 'next'
 import { Updaters } from '..'
 import Providers from '../Providers'
 import GlobalStyle from "../style/Global";
+import {useSyncTLDs} from "../state/tlds/hooks";
 
 // This config is required for number formatting
 BigNumber.config({
@@ -16,6 +17,7 @@ BigNumber.config({
 })
 
 function GlobalHooks() {
+  useSyncTLDs()
   return null
 }
 

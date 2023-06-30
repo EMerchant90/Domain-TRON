@@ -1,16 +1,16 @@
 {
-  "name": "smartcontracts",
-  "version": "2.1.0",
-  "description": "",
+  "name": "contracts",
+  "version": "1.0.0",
+  "description": "tns implementation.",
   "directories": {
     "test": "test"
   },
   "scripts": {
     "compile": "tronbox compile",
     "test": "tronbox test",
-    "migrate": "bash scripts/migrate-and-setup.sh"
+    "test-network": "docker run -it -p 9090:9090 --rm --name tron -e \"mnemonic=maid lock awkward october curtain renew eyebrow access gasp essay lonely buyer\" tronbox/tre",
+    "migrate": "tronbox migrate"
   },
-  "originalAuthors": "truffle-box",
   "license": "MIT",
   "devDependencies": {
     "chalk": "^2.4.1",

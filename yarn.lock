@@ -4042,7 +4042,7 @@ ethers@^4.0.0-beta.1, ethers@^4.0.32:
     uuid "2.0.1"
     xmlhttprequest "1.8.0"
 
-ethers@^5.4.4, ethers@^5.7.2:
+ethers@^5.7.2:
   version "5.7.2"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.7.2.tgz#3a7deeabbb8c030d4126b24f84e525466145872e"
   integrity sha512-wswUsmWo1aOK8rR7DIKiWSw9DbLWe6x98Jrn8wcTflTVvaXhAMaB5zGAXy0GYQEQp9iO1iSHWVyARQm11zUtyg==
@@ -8670,23 +8670,7 @@ tronbox@^3.3.0:
     web3-mock "1.0.1"
     yargs "^15.4.1"
 
-tronweb@^4.4.0:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/tronweb/-/tronweb-4.4.0.tgz#098e5d27e8143f34290f2938f448859b6a5efacc"
-  integrity sha512-0yPmjQE1drPcDtW4YCXFjtvDQmKc/utjKB2J6U5GDcWWhsGqE8yFjdIMJRa1yj1a/oFQNlthKMzw4Jd7lkWbYA==
-  dependencies:
-    "@babel/runtime" "^7.0.0"
-    axios "^0.26.1"
-    bignumber.js "^9.0.1"
-    elliptic "^6.5.4"
-    ethers "^5.4.4"
-    eventemitter3 "^3.1.0"
-    injectpromise "^1.0.0"
-    lodash "^4.17.21"
-    semver "^5.6.0"
-    validator "^13.7.0"
-
-tronweb@^5.1.0:
+tronweb@^5.1.0, tronweb@^5.2.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/tronweb/-/tronweb-5.2.0.tgz#3c1b12721176ce9e67d3af9922d7f7c375098142"
   integrity sha512-DpGqCUjlh48R9+JB96is4Fy3itCzkYGijDhBot3eOYFUruR2KU/BCumhDZ+ofoNfCqHfCWXmw/ClBsG1ygtoxA==
