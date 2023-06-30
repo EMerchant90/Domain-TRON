@@ -66,10 +66,13 @@ now you can open on browser http://localhost:3000 to play arround with TNS.
 
 ### Setup TronLink for local testing.
 We need to add local network in TronLink. for this open TronLink extension in chrome. click on setting icon. and click on Nodes. click on Add Node. and fill the form as shown in image below.
+<br>
 ![img.png](img.png)
 
-Once node setup we need to import private key in TronLink so we can use test balance for transaction fee.
-**603e5eb10d3d5d53b4bfaa0282d593595683b29c0f5f8f1303e20a6fbac2b3f4**
-copy this private key and import as wallet in tron link. 
 
+Once node setup we need to import private key in TronLink so we can use test balance for transaction fee.
+<br><br>
+>**603e5eb10d3d5d53b4bfaa0282d593595683b29c0f5f8f1303e20a6fbac2b3f4**
+
+<br>copy this private key and import as wallet in tron link. 
 Now you are ready to test the platform.
