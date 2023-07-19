@@ -182,6 +182,25 @@ const HomeWrapper = styled.div`
         color :rgb(56,136,255);
       }
   }
+  .tids-list{
+    display : flex;
+    flex-direction : row;
+    width : 100%;
+    margin-left:20px;
+    margin-bottom : 20px;
+  }
+  .tid-text{
+    font-family: inter , sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding : 4px 0 4px 0;
+    margin : 0;
+  }
+  .divider{
+    border: 1px solid #DDDDDF;
+    width : 1px;
+    margin : 0 12px;
+  }
  
 `
 
@@ -271,6 +290,13 @@ const Home: React.FC = () => {
         </button>
       </div>
       
+      <div className='tids-list'>
+        {['tron', 'trx', 'dao'].map((tld , index) =>
+          <div>
+            <p className='tid-text'>.{tld} {index != tld.length-1 && <span className='divider'/>}</p>
+          </div>
+        )}
+      </div>
       {
         loading ?
           <Grid
