@@ -4,6 +4,7 @@ export const SLOW_INTERVAL = 60000
 export const TNS_CONTRACT_ADDRESS = 'TKhVTdGFwAVLnApmiVadVKz4rTza7RYcXL'
 export const TRON_FULL_URL = 'https://nile.trongrid.io'
 
+export const ENERGY_RENTAL_CONTRACT_ADDRESS ="TYGdynqFK2ZLFFYeyyqogNU53Nrxo5oFxM"
 
 // For Local Testing please use the following
 

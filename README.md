@@ -46,7 +46,7 @@ $ yarn workspace contracts test
 
 ### Deploy the Smart Contracts<br>
 First you can change your custom tlds in file.
-> contract/migration/2_deploy_contracts.js.
+> contract/migration/2_deploy_tns_contracts.js.
 
 After updating tlds, run command. 
 
