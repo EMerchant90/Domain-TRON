@@ -5,13 +5,15 @@ import { useTronWalletAddress, useUserActionHandlers } from "../../../state/user
 import { toast } from "react-toastify";
 import { rentEnergy } from 'contract/contractInteraction';
 import { getWalletTrxBalance } from 'utils/web3/getWalletTrxBalance'
-
+import { useAppLoader } from 'state/loading/hooks/useAppLoader';
 interface IFormInput {
   amount: number
   duration: number
 }
 
 const EnergryRentCard = () => {
+
+  const { showLoader , hideLoader } = useAppLoader();
   const walletBalance = getWalletTrxBalance()
 
   const { onUpdateTronWalletAddress } = useUserActionHandlers();
@@ -51,9 +53,11 @@ const EnergryRentCard = () => {
   
   const submitHandler: SubmitHandler<IFormInput> = async (data) => {
     event.preventDefault();
-  
-    console.log(data);
-    await rentEnergy(data.amount, data.duration);
+    showLoader();
+
+    await rentEnergy(data.amount, data.duration).finally(()=>{
+      hideLoader();
+    });
     reset();
   };
   
@@ -76,7 +80,6 @@ const EnergryRentCard = () => {
     <EnergyRentCardWrapper>
         <div className='content-header'>
       <p>Rent Energy</p>
-      <span>JST SUBSIDIES</span>
     </div>
     <form className='content-wrapper' onSubmit={handleSubmit(submitHandler)}>
       <p className='balance'> {walletBalance !== null?  walletBalance :"--"} TRX</p>
@@ -160,7 +163,7 @@ const EnergyRentCardWrapper = styled.div`
   border-radius:10px;
   font-family : 'Roboto', sans-serif;
   box-shadow: 0 10px 20px rgba(0,0,0,.1);
-
+  max-width: 700px;
   & .content-header{
       padding: 26px 30px 17px;
       border-bottom: 1px solid rgba(0,0,0,.1);
@@ -226,7 +229,7 @@ const EnergyRentCardWrapper = styled.div`
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button {
       -webkit-appearance: none;
-      margin: 0;  
+      margin: 0;
     }
     input::placeholder {
       color: rgba(200, 200, 200, 1);
@@ -360,6 +363,6 @@ const EnergyRentCardWrapper = styled.div`
     font-size: 12px;
     font-weight: 500;
     color:red;
-    margin:0 0 10px 
+    margin:0 0 10px
   }
 `

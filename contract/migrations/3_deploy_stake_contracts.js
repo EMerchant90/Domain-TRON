@@ -1,4 +1,4 @@
-var ENERGYRENTAL = artifacts.require("./EnergyRental.sol");
+var ENERGYRENTAL = artifacts.require("./EnergyMarketplace.sol");
 var chalk = require('chalk')
 
 function timeout(ms) {

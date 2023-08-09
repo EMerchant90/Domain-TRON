@@ -9,6 +9,8 @@ import { Updaters } from '..'
 import Providers from '../Providers'
 import GlobalStyle from "../style/Global";
 import {useSyncTLDs} from "../state/tlds/hooks";
+import { useAppLoader } from 'state/loading/hooks/useAppLoader'
+import Loader from 'components/AppLoader/AppLoader'
 
 // This config is required for number formatting
 BigNumber.config({
@@ -61,9 +63,11 @@ type AppPropsWithLayout = AppProps & {
 }
 
 const App = ({ Component, pageProps }: AppPropsWithLayout) => {
+  const {isLoading} =  useAppLoader()
   return (
     <Fragment>
       <Component {...pageProps} />
+      {isLoading && <Loader/>}
     </Fragment>
   )
 }

@@ -5,15 +5,18 @@ import { useForm, SubmitHandler } from "react-hook-form"
 import { STRXIcon, TRXIcon } from 'components/Icons'
 import { useTronWalletAddress, useUserActionHandlers } from "../../../state/user/hooks";
 import { toast } from "react-toastify";
-import { stakeTron, unstakeTron, getTrxBalance, getTotalContractSupply } from 'contract/contractInteraction'
+import { stakeTron, unstakeTron, getTrxBalanceOfContract, getTotalContractSupply } from 'contract/contractInteraction'
 import { convertTRXToUSD } from 'api/trxToDollar'
 import { getWalletTrxBalance } from 'utils/web3/getWalletTrxBalance'
+import { useAppLoader } from 'state/loading/hooks/useAppLoader'
 interface IFormInput {
     amount: number
 }
 
 
 const StakeBox = () => {
+
+    const { showLoader, hideLoader} = useAppLoader();
     const walletBalance = getWalletTrxBalance()
     const walletAddress = useTronWalletAddress();
     const { onUpdateTronWalletAddress } = useUserActionHandlers();
@@ -34,11 +37,12 @@ const StakeBox = () => {
             const [value, supply, contractBalance] = await Promise.all([
                 convertTRXToUSD(),
                 getTotalContractSupply(),
-                getTrxBalance(),
+                getTrxBalanceOfContract(),
             ]);
 
+            console.log("setting up", value, supply.toNumber(), contractBalance)
             setTotalSupply(supply.toNumber());
-            setContractTrxBalance(contractBalance.toNumber());
+            setContractTrxBalance(contractBalance);
             setTrxToDollar(value);
         }
         fetchData();
@@ -46,7 +50,8 @@ const StakeBox = () => {
 
     useEffect(() => {
         if(activeTab === 0){
-            setStakeEstimate((stakeAmount * totalSupply)  / contractTrxBalance);
+            console.log("stakeAmount ", stakeAmount, totalSupply, contractTrxBalance)
+            setStakeEstimate((stakeAmount * (totalSupply > 0 ? totalSupply : 1))  / (contractTrxBalance ? contractTrxBalance : 1));
         }else{
             setStakeEstimate((stakeAmount * contractTrxBalance) / totalSupply);
         }
@@ -55,7 +60,7 @@ const StakeBox = () => {
     useEffect(()=>{
         if(activeTab === 0){
             setRatio(`${(1 * totalSupply)  / contractTrxBalance} sTRX`)
-        }else{  
+        }else{
             setRatio(`${(1 * contractTrxBalance) / totalSupply} TRX`)
         }
     },[activeTab])
@@ -64,12 +69,18 @@ const StakeBox = () => {
 
     const submitHandler: SubmitHandler<IFormInput> = (data) => {
         event.preventDefault();
-        reset();
+        showLoader();
         if (activeTab === 0) {
-            stakeTron(data.amount);
+          
+            stakeTron(data.amount).finally(()=>{
+                hideLoader();
+            });
         } else {
-            unstakeTron(data.amount);
+            unstakeTron(data.amount).finally(()=>{
+                hideLoader();
+            });
         }
+        reset();
     };
 
     const percents = ["25%", "50%", "75%", "100%"];
@@ -190,7 +201,6 @@ const StakeBoxWrapper = styled.div`
     background: linear-gradient(to bottom right, #6699FF 0%, #FFFFFF 45%);
     border-radius:10px;
     font-family : 'Roboto', sans-serif;
-    max-width: 500px;
     width:100%;
     .mt-2{
         margin-top:20px;
@@ -279,7 +289,7 @@ const StakeBoxWrapper = styled.div`
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
           -webkit-appearance: none;
-          margin: 0;  
+          margin: 0;
         }
         input::placeholder {
             color: rgba(200, 200, 200, 1);
@@ -316,21 +326,22 @@ const StakeBoxWrapper = styled.div`
         display:flex;
         flex-direction:row;
         justify-content:space-between;
+        gap:10px;
     }
       .percent-buttons{
-        margin0-right:1px;
         background: #ddd;
         border-radius: 8px;
         border: none;
         font-weight: 500;
         height: 26px;
         font-size: 14px;
-        padding:0 25px;
+        padding:0 50px;
         transition: all .2s ease;
-      }
+        margin:10px 0;
+        }
       .percent-buttons:hover{
         color:#fff;
-        background-color: #6699FF; 
+        background-color: #6699FF;
       }
 
       .key{

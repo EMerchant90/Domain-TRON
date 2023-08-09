@@ -1,4 +1,4 @@
-import { ForwardArrowIcon, HeartIcon, RedCheckIcon } from "components/Icons";
+import { ForwardArrowIcon, HeartIcon, RedCheckIcon, RedCrossIcon } from "components/Icons";
 import styled from "styled-components";
 import React, { useEffect, useState } from "react";
 import {IDomainInfo} from "../../index";
@@ -19,7 +19,7 @@ const DomainData = ({domainsInfo, handleSearch, searchValue}) => {
   
   const walletAddress = useTronWalletAddress();
   
-  const [mintDomainIndexInProgress, setMintDomainIndexInProgress] = useState(-1)
+  const [mintDomainIndexInProgress, setMintDomainIndexInProgress] = useState(0)
   return (
         <DomainDataWrapper>
           
@@ -30,7 +30,7 @@ const DomainData = ({domainsInfo, handleSearch, searchValue}) => {
                       key={index}
                       className="extension-details">
                         <div className="detail-card">
-                            <RedCheckIcon />
+                          {item.available ? <RedCheckIcon/> : <RedCrossIcon/>}
                             <div className="user-domain">
                                 <p>name<span>.{item.domain}
                                 </span></p>
@@ -50,10 +50,11 @@ const DomainData = ({domainsInfo, handleSearch, searchValue}) => {
                                 height="50"
                                 width="50"
                                 radius="9"
-                                color="#4fa94d"
+                                color=" rgb(56, 136, 255)"
                                 ariaLabel="three-dots-loading"
                                 wrapperStyle={{
                                   paddingLeft: '10px',
+                                  paddingRight: '15px',
                                 }}
                                 visible={true}/>
                               :
@@ -265,7 +266,7 @@ const DomainDataWrapper = styled.div`
     }
 
     & .status-not-available {
-      background: rgb(171, 54, 54);
+      background: #FF4141;
       text-transform: uppercase;
       font-size: 12px;
       font-weight: 700;

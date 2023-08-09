@@ -1,11 +1,11 @@
 import React from 'react'
 import Layout from 'components/Layout/Layout'
-import Home from "../views/Home";
+import Home from 'views/Home'
 
 const YourDomainPage = () => {
   return <>
       <Layout>
-        <Home/>
+          <Home/>
       </Layout>
   </>
 }

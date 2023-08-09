@@ -15,11 +15,11 @@ const EnergyRent = () => {
                 </p>
             </div>
             <p className='heading-description'>
-                A platform for convenient, stable, and low-price Energy rental.
+                A Marketplace for Energy rental.
             </p>
             <div className='main-flex'>
 
-              <EnergyDetails/>
+              {/* <EnergyDetails/> */}
 
                 <EnergryRentCard/>
             </div>
@@ -42,7 +42,7 @@ const EnergyRentWrapper = styled.div`
         span{
             background-image: linear-gradient(to top, rgba(255,0,0,0),   rgb(56, 136, 255));
             width:6px;
-            display:block;    
+            display:block;
             border-radius: 1px;
             margin-right:10px;
         }
@@ -66,7 +66,7 @@ const EnergyRentWrapper = styled.div`
         display:flex;
         flex-direction:row;
         width:100%;
-        justify-content:space-between;
+        justify-content:flex-start;
     }
 
 `

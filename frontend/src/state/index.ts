@@ -5,7 +5,7 @@ import { persistReducer, persistStore } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 import user from './user/reducer'
 import tlds from './tlds/reducer'
-
+import isLoading from "./loading/reducer";
 const PERSISTED_KEYS: string[] = ['tlds']
 
 const persistConfig = {
@@ -19,6 +19,7 @@ const persistedReducer = persistReducer(
   combineReducers({
     user,
     tlds,
+    isLoading
   }),
 )
 

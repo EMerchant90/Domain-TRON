@@ -1,4 +1,4 @@
-.success-confirm-button{
+.success-confirm-button , .success-cancel-button{
     border-radius: 8px !important;
     background-color: rgb(56, 136, 255) !important;
     color: white !important;

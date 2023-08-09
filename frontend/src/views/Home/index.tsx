@@ -91,9 +91,9 @@ const HomeWrapper = styled.div`
     flex-direction : row;
     background-color : #fff;
     box-shadow: rgb(0 0 0/20%) 0 0 10px;
-    margin-bottom : 30px;
+    margin-bottom : 15px;
     border-radius : 8px;
-    
+    box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.04), 0px 2px 3px rgba(0, 0, 0, 0.07), 0px 6px 6px rgba(0, 0, 0, 0.04), 0px 12px 12px rgba(0, 0, 0, 0.03), 0px 20px 24px rgba(0, 0, 0, 0.03);
     & input{
       padding: 8px 20px;
       border:none;
@@ -142,6 +142,7 @@ const HomeWrapper = styled.div`
     align-items : center;
     text-align : center;
     width : 500px;
+    
   }
 
   & .search-result{
@@ -182,6 +183,7 @@ const HomeWrapper = styled.div`
         color :rgb(56,136,255);
       }
   }
+
   .tids-list{
     display : flex;
     flex-direction : row;
@@ -199,7 +201,7 @@ const HomeWrapper = styled.div`
   .divider{
     border: 1px solid #DDDDDF;
     width : 1px;
-    margin : 0 12px;
+    margin : 0 12px; 
   }
  
 `
@@ -220,6 +222,7 @@ const Home: React.FC = () => {
   const [searchValue, setSearchValue] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [domainsInfo, setDomainsInfo] = useState<IDomainInfo[]>([])
+  console.log("all tlds", allTLDs)
 
   const handleSearch = debounce(async (value: string) => {
     // Perform API search with the value
@@ -282,21 +285,21 @@ const Home: React.FC = () => {
           Your identity across web3, one name for all your crypto addresses, and your decentralised website.
         </p>
       </div>
-
       <div className="search-field-box">
         <input type="text" placeholder="Search for your new domain" onChange={valueChangeHandler} />
         <button onClick={search}>
             <SearchIcon/>
         </button>
       </div>
-      
       <div className='tids-list'>
-        {['tron', 'trx', 'dao'].map((tld , index) =>
-          <div>
+        {allTLDs.map((tld , index) =>
+          <div key={index}> 
             <p className='tid-text'>.{tld} {index != tld.length-1 && <span className='divider'/>}</p>
           </div>
         )}
       </div>
+  
+      
       {
         loading ?
           <Grid
