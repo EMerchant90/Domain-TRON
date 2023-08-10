@@ -6,7 +6,7 @@
     padding: 10px 20px !important;
     font-size: 16px !important;
     cursor: pointer !important;
-    font-family: 'Roboto', sans-serif !important; 
+    font-family: 'Roboto', sans-serif !important;
 }
 
 .fail-confirm-button:focus ,
@@ -15,6 +15,7 @@
 .success-confirm-button:active{
     outline: none !important;
     border: none !important;
+    box-shadow: none !important;
 }
 .fail-confirm-button{
     border-radius: 8px !important;
@@ -25,4 +26,10 @@
     font-size: 16px !important;
     cursor: pointer !important;
     font-family: 'Roboto', sans-serif !important;
+}
+
+.title{
+    font-family: 'Roboto', sans-serif !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
 }
