@@ -49,6 +49,9 @@ const Header = () => {
                 
               </div>
             </div>
+            <Link href="/SendTRX" >
+              <a className={router.pathname === '/SendTRX' ? 'active' : ''}>Send TRX</a>
+            </Link>
           </div>}
         </div>
         <div>
@@ -223,8 +226,9 @@ const HeaderWrapper = styled.div`
             font-family: 'Roboto', sans-serif;
             color: rgb(56, 136, 255);
             cursor: pointer;
-            margin-right: 15px;
+
             border-bottom: 2px solid rgb(56, 136, 255);
+            margin-right: 15px;
           }
         }
 
@@ -242,7 +246,8 @@ const HeaderWrapper = styled.div`
         font-family: 'Roboto', sans-serif;
         color: #506690;
         margin: 0;
-        padding-bottom: 5px;
+        margin-right: 15px;
+
       }
 
       .dropdown-active{
@@ -251,12 +256,12 @@ const HeaderWrapper = styled.div`
         font-family: 'Roboto', sans-serif;
         color: rgb(56, 136, 255);
         cursor: pointer;
-        margin-right: 15px;
         border-bottom: 2px solid rgb(56, 136, 255);
         background-color: #ddd;
       }
  
       .dropdown-content {
+        padding-top: 5px;
         display: none;
         position: absolute;
         background-color: #f9f9f9;

@@ -18,11 +18,11 @@ const sweetAlertService = {
         confirmButton: styles["success-confirm-button"],
         cancelButton: styles["success-cancel-button"],
         title: styles["title"],
-        container: 'sweetalert-container',
+        container: 'sweetalert-container', 
       },
     });
   },
-  
+
   showErrorAlert: (title, message) => {
     Swal.fire({
       icon: 'error',
@@ -33,12 +33,12 @@ const sweetAlertService = {
       customClass:{
         confirmButton: styles["fail-confirm-button"],
         title: styles["title"],
-        container: 'sweetalert-container',
-        
+        container: 'sweetalert-container', 
+
       }
     });
   },
-  
+
   // ... other methods ...
 };
 

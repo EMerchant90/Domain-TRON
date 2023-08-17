@@ -13,7 +13,7 @@ const StakePage = () => {
                 </p>
             </div>
             <p className='heading-description'>
-                Stake your TRX to get sTRX and earn yield.
+                Stake your TRX to get sTRX and earn double yields.
             </p>
             <div className='main-flex'>
                 {/* <APYBox /> */}
@@ -39,7 +39,7 @@ const StakePageWrapper = styled.div`
         span{
             background-image: linear-gradient(to top, rgba(255,0,0,0),   rgb(56, 136, 255));
             width:6px;
-            display:block;
+            display:block;    
             border-radius: 1px;
             margin-right:10px;
         }

@@ -1,13 +1,13 @@
 import React from 'react'
 import Layout from 'components/Layout/Layout'
-import Home from 'views/Home'
+import SendTRXPage from 'views/SendTRX/SendTRXPage'
 
-const YourDomainPage = () => {
+const SendTRX = () => {
   return <>
       <Layout>
-          <Home/>
+          <SendTRXPage/>
       </Layout>
   </>
 }
 
-export default YourDomainPage
+export default SendTRX

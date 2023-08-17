@@ -19,8 +19,8 @@ const EnergryRentCard = () => {
   const { onUpdateTronWalletAddress } = useUserActionHandlers();
   const walletAddress = useTronWalletAddress();
   
-  const [energyAmount, setEnergyAmount] = useState(100000);
-  const [duration, setDuration] = useState(3);
+  const [energyAmount, setEnergyAmount] = useState(0);
+  const [duration, setDuration] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
   
   const calculateTotalAmount = () => {
@@ -33,16 +33,7 @@ const EnergryRentCard = () => {
     setTotalAmount(calculateTotalAmount());
   }, [duration, energyAmount]);
   
-  const billing = [
-    {
-      key: 'Prepaid rent',
-      value: '28.443752 TRX'
-    },
-    {
-      key: 'Energy Consumed',
-      value: 'Estimating ...'
-    }
-  ];
+
   
   const {
     register,
@@ -55,7 +46,7 @@ const EnergryRentCard = () => {
     event.preventDefault();
     showLoader();
 
-    await rentEnergy(data.amount, data.duration).finally(()=>{
+    await rentEnergy(totalAmount, data.duration).finally(()=>{
       hideLoader();
     });
     reset();
@@ -120,12 +111,6 @@ const EnergryRentCard = () => {
           <p>Total</p>
           <span>{`${totalAmount} TRX`}</span>
         </div>
-        {billing.map((item, index) => (
-          <div key={index} className='flex-between'>
-            <p className='key'>{item.key}</p>
-            <span className='value'>{item.value}</span>
-          </div>
-        ))}
         <div className='expected-price-box'>
           <img src='https://app.justlend.org/static/media/loud-icon.54959299.svg' alt='Loud Icon' />
           <p>Expected Rental Subsidies</p>
@@ -133,12 +118,6 @@ const EnergryRentCard = () => {
         </div>
       </div>
 
-      <div className='tutorial-box'>
-        <img src='https://app.justlend.org/static/media/warning-yellow-icon.880d4dde.svg' alt='Warning Icon' />
-        <p>
-          Wallet signature page's "Resources Consumed" doesn't show gas subsidy from JustLend DAO. Please refer to the transaction result for actual subsidy amount.
-        </p>
-      </div>
 
       {walletAddress ? (
         <button className='submit-button' type='submit'>
@@ -163,7 +142,7 @@ const EnergyRentCardWrapper = styled.div`
   border-radius:10px;
   font-family : 'Roboto', sans-serif;
   box-shadow: 0 10px 20px rgba(0,0,0,.1);
-  max-width: 700px;
+  
   & .content-header{
       padding: 26px 30px 17px;
       border-bottom: 1px solid rgba(0,0,0,.1);
@@ -229,7 +208,7 @@ const EnergyRentCardWrapper = styled.div`
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button {
       -webkit-appearance: none;
-      margin: 0;
+      margin: 0;  
     }
     input::placeholder {
       color: rgba(200, 200, 200, 1);
@@ -294,16 +273,6 @@ const EnergyRentCardWrapper = styled.div`
     border-radius: 8px;
   }
 
-  .key{
-    color: 	#5A5A5A;
-    font-size: 12px;
-    font-weight: 400;
-  }
-  .value{
-    font-size: 12px;
-    font-weight: 400;
-    
-  }
 
   .expected-price-box{
     display:flex;
@@ -328,22 +297,10 @@ const EnergyRentCardWrapper = styled.div`
   }
   }
 
-  .tutorial-box{
-    display:flex;
-    flex-direction:row;
-    margin-top: 10px;
-    p{
-      margin: 0 5px;
-      font-size: 12px;
-      line-height: 17px;
-      margin-top: 10px;
-      color: rgb(155, 155, 166);
-    }
-  }
   
   .submit-button{
     width: 100%;
-    margin-top:15px;
+    margin-top:25px;
     padding: 10px 15px;
     border-radius: 8px;
     border:none;
@@ -363,6 +320,6 @@ const EnergyRentCardWrapper = styled.div`
     font-size: 12px;
     font-weight: 500;
     color:red;
-    margin:0 0 10px
+    margin:0 0 10px 
   }
 `

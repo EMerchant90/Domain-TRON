@@ -5,10 +5,12 @@ import { useForm, SubmitHandler } from "react-hook-form"
 import { STRXIcon, TRXIcon } from 'components/Icons'
 import { useTronWalletAddress, useUserActionHandlers } from "../../../state/user/hooks";
 import { toast } from "react-toastify";
-import { stakeTron, unstakeTron, getTrxBalanceOfContract, getTotalContractSupply } from 'contract/contractInteraction'
+import { stakeTron, unstakeTron, getTrxBalanceOfContract, getTotalContractSupply , getUserStrxBalance } from 'contract/contractInteraction'
 import { convertTRXToUSD } from 'api/trxToDollar'
 import { getWalletTrxBalance } from 'utils/web3/getWalletTrxBalance'
 import { useAppLoader } from 'state/loading/hooks/useAppLoader'
+import ClaimAble from './ClaimAble'
+
 interface IFormInput {
     amount: number
 }
@@ -16,8 +18,8 @@ interface IFormInput {
 
 const StakeBox = () => {
 
-    const { showLoader, hideLoader} = useAppLoader();
-    const walletBalance = getWalletTrxBalance()
+    const { showLoader, hideLoader } = useAppLoader();
+    const walletTrxBalance = getWalletTrxBalance()
     const walletAddress = useTronWalletAddress();
     const { onUpdateTronWalletAddress } = useUserActionHandlers();
 
@@ -27,43 +29,66 @@ const StakeBox = () => {
     const [stakeEstimate, setStakeEstimate] = useState(0);
     const [totalSupply, setTotalSupply] = useState(0);
     const [contractTrxBalance, setContractTrxBalance] = useState(0);
-    const [ratio , setRatio] = useState('');
-
+    const [ratio, setRatio] = useState('');
+    const [strxBalance, setStrxBalance] = useState(0)
+    const [userBalance, setUserBalance] = useState(0);
     const multiplier = 10 ** 2
-
 
     useEffect(() => {
         async function fetchData() {
-            const [value, supply, contractBalance] = await Promise.all([
+            const [value, supply, contractBalance  ] = await Promise.all([
                 convertTRXToUSD(),
                 getTotalContractSupply(),
                 getTrxBalanceOfContract(),
             ]);
-
-            console.log("setting up", value, supply.toNumber(), contractBalance)
             setTotalSupply(supply.toNumber());
-            setContractTrxBalance(contractBalance);
+            setContractTrxBalance(contractBalance.toNumber());
             setTrxToDollar(value);
         }
         fetchData();
     }, []);
 
     useEffect(() => {
-        if(activeTab === 0){
-            console.log("stakeAmount ", stakeAmount, totalSupply, contractTrxBalance)
-            setStakeEstimate((stakeAmount * (totalSupply > 0 ? totalSupply : 1))  / (contractTrxBalance ? contractTrxBalance : 1));
-        }else{
-            setStakeEstimate((stakeAmount * contractTrxBalance) / totalSupply);
+
+        const fetch = async () => {
+            if(walletAddress === null) return
+            const strx = await getUserStrxBalance(walletAddress)
+            setStrxBalance(strx.amount.toNumber() / Math.pow(10, 6))
+        }
+        fetch()
+
+    },[walletAddress])
+
+    useEffect(() => {
+        if (totalSupply === 0 || contractTrxBalance === 0) {
+            setStakeEstimate(stakeAmount);
+        } else {
+            const multiplier = activeTab === 0 ? totalSupply : contractTrxBalance;
+            const divisor = activeTab === 0 ? contractTrxBalance : totalSupply;
+            setStakeEstimate((stakeAmount * multiplier) / divisor);
         }
     }, [stakeAmount, contractTrxBalance, totalSupply]);
 
-    useEffect(()=>{
-        if(activeTab === 0){
-            setRatio(`${(1 * totalSupply)  / contractTrxBalance} sTRX`)
-        }else{
-            setRatio(`${(1 * contractTrxBalance) / totalSupply} TRX`)
+    useEffect(() => {
+        if (activeTab === 0) {
+            setUserBalance(walletTrxBalance)
+        } else {
+            setUserBalance(strxBalance)
         }
-    },[activeTab])
+    }, [walletAddress, activeTab, walletTrxBalance])
+
+    useEffect(() => {
+        const token = activeTab === 0 ? 'sTRX' : 'TRX'
+        if (totalSupply === 0 || contractTrxBalance === 0) {
+            setRatio(`1 ${token}`)
+        } else {
+            const multiplier = activeTab === 0 ? totalSupply : contractTrxBalance;
+            const divisor = activeTab === 0 ? contractTrxBalance : totalSupply;
+            setRatio(`${(1 * multiplier) / divisor}  ${token}`)
+        }
+        setStakeAmount(0)
+
+    }, [activeTab])
 
     const { register, handleSubmit, formState: { errors }, reset } = useForm<IFormInput>();
 
@@ -71,19 +96,32 @@ const StakeBox = () => {
         event.preventDefault();
         showLoader();
         if (activeTab === 0) {
-          
-            stakeTron(data.amount).finally(()=>{
+            stakeTron(data.amount).finally(() => {
                 hideLoader();
+               reset();
+
             });
         } else {
-            unstakeTron(data.amount).finally(()=>{
+            unstakeTron(data.amount).finally(() => {
                 hideLoader();
+                reset();
+
             });
         }
         reset();
     };
 
     const percents = ["25%", "50%", "75%", "100%"];
+
+    const calculatePercentageValue = (percentage) => {
+        return (userBalance * percentage) / 100;
+    };
+
+    // Function to handle percentage button click
+    const handlePercentageButtonClick = (percentage) => {
+        const calculatedValue = calculatePercentageValue(percentage);
+        setStakeAmount(calculatedValue);
+    };
 
     const handleConnectWalletClick = async () => {
         event.preventDefault();
@@ -120,21 +158,33 @@ const StakeBox = () => {
                 >
                     Unstake
                 </button>
+                <button
+                    className={activeTab === 2 ? 'active' : ''}
+                    onClick={() => {
+                        setActiveTab(2);
+                        reset();
+                    }}
+                >
+                    Claimable
+                </button>
             </div>
 
-            <div className='flex-between'>
+            {activeTab !== 2 && <div className='flex-between' >
                 <p className='amount-text'>Amount</p>
                 {/* Add balance here */}
                 <p className='balance-text'>
-                    Balance <span>{walletBalance !== null ? (walletBalance + ' ' + (activeTab === 0 ? 'TRX' : 'sTRX')) : '--'}</span>
+                    Balance <span>{userBalance !== null ? (userBalance + (activeTab === 0 ? ' TRX' : ' sTRX')) : '--'}</span>
                 </p>
-            </div>
-            <form onSubmit={handleSubmit(submitHandler)}>
+            </div>}
+            {activeTab !== 2 && <form onSubmit={handleSubmit(submitHandler)}>
                 <div className='input-box'>
                     <input
                         type='number'
                         placeholder='100.00'
+
+                        value={stakeAmount === 0 ? '' : stakeAmount}
                         {...register('amount', {
+
                             required: true,
                             onChange(event) {
                                 setStakeAmount(event.target.value);
@@ -154,7 +204,12 @@ const StakeBox = () => {
 
                 <div className='buttons-box'>
                     {percents.map((percent, index) => (
-                        <button className='percent-buttons' key={index}>
+                        <button className='percent-buttons' key={index}
+                            onClick={() => {
+                                event.preventDefault();
+                                handlePercentageButtonClick(parseInt(percent))
+                            }}
+                        >
                             {percent}
                         </button>
                     ))}
@@ -164,7 +219,7 @@ const StakeBox = () => {
                     <p className='key'>You Will Get (Est.)</p>
                     {/* add estimated value */}
                     <span className='value'>
-                        {stakeEstimate} {activeTab === 1 ? <TRXIcon width='14' height='14' /> : <STRXIcon width='14' height='14' />}
+                        {stakeEstimate ? stakeEstimate : "0"} {activeTab === 1 ? <TRXIcon width='14' height='14' /> : <STRXIcon width='14' height='14' />}
                         {activeTab === 0 ? 'sTRX' : 'TRX'}
                     </span>
                 </div>
@@ -186,7 +241,9 @@ const StakeBox = () => {
                     <img src='https://app.justlend.org/static/media/warning-yellow-icon.880d4dde.svg' alt='Warning Icon' />
                     <p>The TRX will be available for withdrawal after the 14-day unstaking period ends.</p>
                 </div>
-            </form>
+            </form>}
+
+            {activeTab === 2 && <ClaimAble/>}
         </StakeBoxWrapper>
     );
 
@@ -201,7 +258,8 @@ const StakeBoxWrapper = styled.div`
     background: linear-gradient(to bottom right, #6699FF 0%, #FFFFFF 45%);
     border-radius:10px;
     font-family : 'Roboto', sans-serif;
-    width:100%;
+    min-width: 640px;
+    min-height: 360px;
     .mt-2{
         margin-top:20px;
     }
@@ -289,7 +347,7 @@ const StakeBoxWrapper = styled.div`
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
           -webkit-appearance: none;
-          margin: 0;
+          margin: 0;  
         }
         input::placeholder {
             color: rgba(200, 200, 200, 1);
@@ -341,7 +399,7 @@ const StakeBoxWrapper = styled.div`
         }
       .percent-buttons:hover{
         color:#fff;
-        background-color: #6699FF;
+        background-color: #6699FF; 
       }
 
       .key{
@@ -381,12 +439,10 @@ const StakeBoxWrapper = styled.div`
       .tutorial-box{
         display:flex;
         flex-direction:row;
-        margin-top: 10px;
+        margin-top: 20px;
         p{
           margin: 0 5px;
           font-size: 12px;
-          line-height: 17px;
-          margin-top: 10px;
           color: rgb(155, 155, 166);
         }
       }
