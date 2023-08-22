@@ -21,6 +21,14 @@ const GlobalStyle = createGlobalStyle`
   input:focus {
     outline:none;
   }
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active{
+      -webkit-background-clip: text;
+      -webkit-background-color: transparent !important;
+      transition: background-color 5000s ease-in-out 0s;
+  }
 
   .nav-link {
     padding: 0.4rem 0.75rem !important;

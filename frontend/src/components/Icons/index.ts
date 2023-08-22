@@ -15,7 +15,7 @@ export {default as YoutubeIcon } from './Youtube/Youtube';
 export {default as LinkedInIcon } from './LinkedIn/LinkedIn';
 export {default as TRXIcon } from './TRXIcon/TRXIcon';
 export {default as STRXIcon } from './STRX/STRXIcon';
-
+export {default as CloseIcon} from './CloseIcon/CloseIcon';
 
 
 

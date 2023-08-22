@@ -4,6 +4,9 @@ import { useForm, SubmitHandler } from "react-hook-form"
 import { useAppLoader } from 'state/loading/hooks/useAppLoader';
 import { useTronWalletAddress, useUserActionHandlers } from "../../../state/user/hooks";
 import { toast } from "react-toastify";
+import { getWalletTrxBalance } from 'utils/web3/getWalletTrxBalance'
+import sweetAlertService from 'utils/SweetAlertServices/sweetAlertServices';
+import { getUserBandwidth } from 'utils/web3/getWalletBandwidth';
 
 interface IFormInput {
     sendersAdress: string
@@ -12,6 +15,9 @@ interface IFormInput {
 }
 
 const SendTrxForm = () => {
+  
+  const walletBalance = getWalletTrxBalance()
+  const { hideLoader, showLoader } = useAppLoader();
 
     const walletAddress = useTronWalletAddress();
     const { onUpdateTronWalletAddress } = useUserActionHandlers();
@@ -19,6 +25,18 @@ const SendTrxForm = () => {
     const [recieverAddress, setRecieverAddress] = useState('');
     const [amount, setAmount] = useState(0);
     const [senderWalletAddress, setSenderWalletAddress] = useState('');
+    const [userBandwidth, setUserBandwidth] = useState(0);
+
+    useEffect(()=>{
+      const fetch = async () => {
+        if(!walletAddress) return
+        const bandwidth = await getUserBandwidth(walletAddress)
+        setUserBandwidth(bandwidth)
+      }
+      fetch()
+    },[walletAddress])
+
+  
 
     useEffect(() => {
         setSenderWalletAddress(walletAddress)
@@ -31,9 +49,25 @@ const SendTrxForm = () => {
         reset
     } = useForm<IFormInput>();
 
+
     const submitHandler: SubmitHandler<IFormInput> = async (data) => {
         event.preventDefault();
-        console.log(data);
+        showLoader();
+        try {
+          const { recieverAddress, amount } = data; 
+          
+          const trans = await window.tronWeb.transactionBuilder.sendTrx(recieverAddress , amount * Math.pow(10,6) , walletAddress)
+          const sign = await window.tronWeb.trx.sign(trans)
+
+          const transaction = await window.tronWeb.trx.sendRawTransaction(sign);
+          hideLoader();
+          console.log('Transaction initiated:', transaction);
+          sweetAlertService.showSuccesMessage("Transaction Successfull","Your TRX has been sent successfully");
+        } catch (error:any) {
+          hideLoader();
+          sweetAlertService.showErrorAlert("Transaction Failed",error.message);
+        }
+
         reset();
     };
 
@@ -55,6 +89,7 @@ const SendTrxForm = () => {
         <SendTrxFormWrapper>
             <div className='content-header'>
                 <p>Send TRX </p>
+                <p className='balance'> Balance: {walletBalance !== null?  walletBalance :"--"} TRX</p>
             </div>
             <form className='content-wrapper' onSubmit={handleSubmit(submitHandler)}>
 
@@ -94,11 +129,15 @@ const SendTrxForm = () => {
                 <div className='billing-details'>
                     <div className=' expected-price-box flex-between '>
                         <p>Estimated Energy Consumption</p>
-                        <span>{` 100 TRX`}</span>
+                        <span>{` 0`}</span>
                     </div>
                     <div className=' expected-price-box flex-between '>
                         <p>Estimated Bandwidth Consumption</p>
-                        <span>{` 100 TRX`}</span>
+                        <span>{` 268`}</span>
+                    </div>
+                    <div className=' expected-price-box flex-between '>
+                        <p >Estimated TRX Consumption </p>
+                        <span>{userBandwidth > 268 ? "0 TRX" :` 0.1 TRX`}</span>
                     </div>
                 </div>
 
@@ -109,7 +148,7 @@ const SendTrxForm = () => {
                     </button>
                 ) : (
                     <button className='submit-button' onClick={handleWalletConnect}>
-                        Connect wallet to rent Energy
+                        Connect wallet to send TRX
                     </button>
                 )}
             </form>
@@ -130,6 +169,21 @@ background: linear-gradient(to bottom right, #6699FF 0%, #FFFFFF 45%);
 border-radius:10px;
 font-family : 'Roboto', sans-serif;
 min-width: 700px;
+
+.content-header{
+  display:flex;
+  flex-direction:row;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.balance{
+  margin: 0;
+  font-weight: 400;
+  font-size: 14px;
+  text-align: center;
+
+}
 
 .input-box{
     display:flex;

@@ -13,6 +13,123 @@ import {TNS_CONTRACT_ADDRESS, TRON_FULL_URL} from "../../config/constants";
 import tnsAbi from '../../config/abi/tns.json';
 import {useTLDs} from "../../state/tlds/hooks";
 
+export interface IDomainInfo {
+  domain: string
+  tld: string
+  name: string
+  price: string
+  isAvailable: boolean
+}
+const Home: React.FC = () => {
+  
+  const walletAddress = useTronWalletAddress();
+  const allTLDs = useTLDs()
+  const { onUpdateTronWalletAddress } = useUserActionHandlers();
+  
+  const [searchValue, setSearchValue] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [domainsInfo, setDomainsInfo] = useState<IDomainInfo[]>([])
+  console.log("all tlds", allTLDs)
+
+  const handleSearch = debounce(async (value: string) => {
+    // Perform API search with the value
+    setLoading(true);
+    try {
+      
+      const tronWeb = new TronWeb({
+        fullHost: TRON_FULL_URL,
+        privateKey: '67162e5b6c29261423f731aff081bb65174e289343a779e5ae0695ca16444037',
+      })
+      
+      let tnsContract = await tronWeb.contract(tnsAbi, TNS_CONTRACT_ADDRESS);
+      
+      const searchDomains = allTLDs.map((tld) => `${value}.${tld}`);
+      const availables = await tnsContract.getDomainsAvailibility(searchDomains).call();
+      const domainsInfo = allTLDs.map((tld, index): IDomainInfo => {
+        return {
+          domain: `${value}.${tld}`,
+          price: '1 TRX',
+          tld: tld,
+          name: value,
+          isAvailable: availables[index],
+        }
+      })
+      setDomainsInfo(domainsInfo)
+      console.log(availables)
+    } catch (error) {
+        console.log(error);
+    } finally {
+        setLoading(false);
+    }
+  }, 500);
+
+  const valueChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target;
+    setSearchValue(value);
+    handleSearch(value);
+  };
+
+  useEffect(() => {
+    return () => {
+      // Cleanup the debounced function
+      handleSearch.cancel();
+    };
+  }, []);
+
+  const search = () => {
+    handleSearch(searchValue);
+  };
+
+
+  return (
+    <HomeWrapper>
+
+      <div className='search-box'>
+        <h2 className='domain-heading'>
+          Your domain name
+        </h2>
+        <p className='domain-description'>
+          Your identity across web3, one name for all your crypto addresses, and your decentralised website.
+        </p>
+      </div>
+      <div className="search-field-box">
+        <input type="text" placeholder="Search for your new domain" onChange={valueChangeHandler} />
+        <button onClick={search}>
+            <SearchIcon/>
+        </button>
+      </div>
+      <div className='tids-list'>
+        {allTLDs.map((tld , index) =>
+          <div key={index}> 
+            <p className='tid-text'>.{tld} {index != tld.length-1 && <span className='divider'/>}</p>
+          </div>
+        )}
+      </div>
+  
+      
+      {
+        loading ?
+          <Grid
+            height="80"
+            width="80"
+            color="#4fa94d"
+            ariaLabel="grid-loading"
+            radius="12.5"
+            wrapperStyle={{}}
+            wrapperClass=""
+            visible={true}
+          />
+          :
+          <DomainData domainsInfo={domainsInfo} handleSearch={handleSearch} searchValue={searchValue}/>
+        
+      }
+
+    </HomeWrapper>
+  )
+}
+
+export default Home
+
 
 const HomeWrapper = styled.div`
   width : 100%;
@@ -205,120 +322,3 @@ const HomeWrapper = styled.div`
   }
  
 `
-
-export interface IDomainInfo {
-  domain: string
-  tld: string
-  name: string
-  price: string
-  isAvailable: boolean
-}
-const Home: React.FC = () => {
-  
-  const walletAddress = useTronWalletAddress();
-  const allTLDs = useTLDs()
-  const { onUpdateTronWalletAddress } = useUserActionHandlers();
-  
-  const [searchValue, setSearchValue] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [domainsInfo, setDomainsInfo] = useState<IDomainInfo[]>([])
-  console.log("all tlds", allTLDs)
-
-  const handleSearch = debounce(async (value: string) => {
-    // Perform API search with the value
-    setLoading(true);
-    try {
-      
-      const tronWeb = new TronWeb({
-        fullHost: TRON_FULL_URL,
-        privateKey: '67162e5b6c29261423f731aff081bb65174e289343a779e5ae0695ca16444037',
-      })
-      
-      let tnsContract = await tronWeb.contract(tnsAbi, TNS_CONTRACT_ADDRESS);
-      
-      const searchDomains = allTLDs.map((tld) => `${value}.${tld}`);
-      const availables = await tnsContract.getDomainsAvailibility(searchDomains).call();
-      const domainsInfo = allTLDs.map((tld, index): IDomainInfo => {
-        return {
-          domain: `${value}.${tld}`,
-          price: '1 TRX',
-          tld: tld,
-          name: value,
-          isAvailable: availables[index],
-        }
-      })
-      setDomainsInfo(domainsInfo)
-      console.log(availables)
-    } catch (error) {
-        console.log(error);
-    } finally {
-        setLoading(false);
-    }
-  }, 500);
-
-  const valueChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    setSearchValue(value);
-    handleSearch(value);
-  };
-
-  useEffect(() => {
-    return () => {
-      // Cleanup the debounced function
-      handleSearch.cancel();
-    };
-  }, []);
-
-  const search = () => {
-    handleSearch(searchValue);
-  };
-
-
-  return (
-    <HomeWrapper>
-
-      <div className='search-box'>
-        <h2 className='domain-heading'>
-          Your domain name
-        </h2>
-        <p className='domain-description'>
-          Your identity across web3, one name for all your crypto addresses, and your decentralised website.
-        </p>
-      </div>
-      <div className="search-field-box">
-        <input type="text" placeholder="Search for your new domain" onChange={valueChangeHandler} />
-        <button onClick={search}>
-            <SearchIcon/>
-        </button>
-      </div>
-      <div className='tids-list'>
-        {allTLDs.map((tld , index) =>
-          <div key={index}> 
-            <p className='tid-text'>.{tld} {index != tld.length-1 && <span className='divider'/>}</p>
-          </div>
-        )}
-      </div>
-  
-      
-      {
-        loading ?
-          <Grid
-            height="80"
-            width="80"
-            color="#4fa94d"
-            ariaLabel="grid-loading"
-            radius="12.5"
-            wrapperStyle={{}}
-            wrapperClass=""
-            visible={true}
-          />
-          :
-          <DomainData domainsInfo={domainsInfo} handleSearch={handleSearch} searchValue={searchValue}/>
-        
-      }
-
-    </HomeWrapper>
-  )
-}
-
-export default Home

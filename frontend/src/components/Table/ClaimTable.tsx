@@ -30,9 +30,6 @@ const ClaimTable = ({ data }) => {
   // }
 
   const HandleCountDown1 = ({item, index}) => {
-    console.log("items ",item)
-    console.log("items in table",item['claimTime'].toNumber())
-
     const { counter, isEnded } = useCountDown({ targetTimestamp: item['claimTime'].toNumber() });
 
     return (
@@ -68,7 +65,7 @@ const ClaimTable = ({ data }) => {
         </thead>
         <tbody>
           {data.map((item, index) => (
-              <HandleCountDown1 item={item} index={index} />
+              <HandleCountDown1 key={index} item={item} index={index} />
           ))}
         </tbody>
       </table>

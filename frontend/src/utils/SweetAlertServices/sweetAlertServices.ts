@@ -22,6 +22,23 @@ const sweetAlertService = {
       },
     });
   },
+  showSuccesMessage: (title, message , ) => {
+    Swal.fire({
+      icon: 'success',
+      title: title,
+      text: message,
+      confirmButtonText: "Confirm",
+      allowEscapeKey: false,
+      allowOutsideClick: false,
+      showCloseButton: false,
+      showConfirmButton: true,
+      customClass:{
+        confirmButton: styles["success-confirm-button"],
+        title: styles["title"],
+        container: 'sweetalert-container', 
+      },
+    });
+  },
 
   showErrorAlert: (title, message) => {
     Swal.fire({
