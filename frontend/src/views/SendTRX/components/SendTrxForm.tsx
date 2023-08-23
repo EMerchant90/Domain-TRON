@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { getWalletTrxBalance } from 'utils/web3/getWalletTrxBalance'
 import sweetAlertService from 'utils/SweetAlertServices/sweetAlertServices';
 import { getUserBandwidth } from 'utils/web3/getWalletBandwidth';
+import { getUserTransactions } from 'utils/web3/getWalletTransactions';
 
 interface IFormInput {
     sendersAdress: string
@@ -26,6 +27,8 @@ const SendTrxForm = () => {
     const [amount, setAmount] = useState(0);
     const [senderWalletAddress, setSenderWalletAddress] = useState('');
     const [userBandwidth, setUserBandwidth] = useState(0);
+    const [transactions, setTransactions] = useState(0)
+    const [estimatedTrx , setEstimatedTrx] = useState(0)
 
     useEffect(()=>{
       const fetch = async () => {
@@ -36,7 +39,26 @@ const SendTrxForm = () => {
       fetch()
     },[walletAddress])
 
-  
+    useEffect(()=>{
+      const fetch = async () => {
+          if(recieverAddress.length < 34) return
+          const transactions = await getUserTransactions(recieverAddress)
+          if(transactions) setTransactions(transactions.length)
+      }
+      fetch()
+    },[recieverAddress])
+
+    useEffect(() => {
+      if (userBandwidth < 268) {
+        setEstimatedTrx(0.002);
+      } else {
+        if (transactions <= 0) {
+          setEstimatedTrx(0.002 + 0.1);
+        } else {
+          setEstimatedTrx(0.002);
+        }
+      }
+    }, [userBandwidth, transactions]);
 
     useEffect(() => {
         setSenderWalletAddress(walletAddress)
@@ -61,7 +83,6 @@ const SendTrxForm = () => {
 
           const transaction = await window.tronWeb.trx.sendRawTransaction(sign);
           hideLoader();
-          console.log('Transaction initiated:', transaction);
           sweetAlertService.showSuccesMessage("Transaction Successfull","Your TRX has been sent successfully");
         } catch (error:any) {
           hideLoader();
@@ -125,7 +146,6 @@ const SendTrxForm = () => {
                 </div>
                 {errors.amount && <p className='error-text'>This field is required</p>}
 
-
                 <div className='billing-details'>
                     <div className=' expected-price-box flex-between '>
                         <p>Estimated Energy Consumption</p>
@@ -133,14 +153,13 @@ const SendTrxForm = () => {
                     </div>
                     <div className=' expected-price-box flex-between '>
                         <p>Estimated Bandwidth Consumption</p>
-                        <span>{` 268`}</span>
+                        <span>{transactions === 0 ? "100": `268`}</span>
                     </div>
                     <div className=' expected-price-box flex-between '>
                         <p >Estimated TRX Consumption </p>
-                        <span>{userBandwidth > 268 ? "0 TRX" :` 0.1 TRX`}</span>
+                        <span>{`${estimatedTrx.toFixed(4)} TRX`}</span>
                     </div>
                 </div>
-
 
                 {walletAddress ? (
                     <button className='submit-button' type='submit'>
