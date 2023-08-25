@@ -8,172 +8,195 @@ import { getWalletTrxBalance } from 'utils/web3/getWalletTrxBalance'
 import sweetAlertService from 'utils/SweetAlertServices/sweetAlertServices';
 import { getUserBandwidth } from 'utils/web3/getWalletBandwidth';
 import { getUserTransactions } from 'utils/web3/getWalletTransactions';
+import { getOwner } from 'contract/tnsContractInteraction';
 
 interface IFormInput {
-    sendersAdress: string
-    recieverAddress: string
-    amount: number
+  sendersAdress: string
+  recieverAddress: string
+  amount: number
 }
 
 const SendTrxForm = () => {
-  
+
   const walletBalance = getWalletTrxBalance()
   const { hideLoader, showLoader } = useAppLoader();
 
-    const walletAddress = useTronWalletAddress();
-    const { onUpdateTronWalletAddress } = useUserActionHandlers();
+  const walletAddress = useTronWalletAddress();
+  const { onUpdateTronWalletAddress } = useUserActionHandlers();
 
-    const [recieverAddress, setRecieverAddress] = useState('');
-    const [amount, setAmount] = useState(0);
-    const [senderWalletAddress, setSenderWalletAddress] = useState('');
-    const [userBandwidth, setUserBandwidth] = useState(0);
-    const [transactions, setTransactions] = useState(0)
-    const [estimatedTrx , setEstimatedTrx] = useState(0)
+  const [recieverAddress, setRecieverAddress] = useState('');
+  const [amount, setAmount] = useState(0);
+  const [senderWalletAddress, setSenderWalletAddress] = useState('');
+  const [userBandwidth, setUserBandwidth] = useState(0);
+  const [transactions, setTransactions] = useState(0)
+  const [estimatedTrx, setEstimatedTrx] = useState(0)
 
-    useEffect(()=>{
-      const fetch = async () => {
-        if(!walletAddress) return
-        const bandwidth = await getUserBandwidth(walletAddress)
-        setUserBandwidth(bandwidth)
-      }
-      fetch()
-    },[walletAddress])
+  useEffect(() => {
+    const fetch = async () => {
+      if (!walletAddress) return
+      const bandwidth = await getUserBandwidth(walletAddress)
+      setUserBandwidth(bandwidth)
+    }
+    fetch()
+  }, [walletAddress])
 
-    useEffect(()=>{
-      const fetch = async () => {
-          if(recieverAddress.length < 34) return
-          const transactions = await getUserTransactions(recieverAddress)
-          if(transactions) setTransactions(transactions.length)
-      }
-      fetch()
-    },[recieverAddress])
+  useEffect(() => {
+    const fetch = async () => {
+      if (recieverAddress.length < 34) return
+      const transactions = await getUserTransactions(recieverAddress)
+      if (transactions) setTransactions(transactions.length)
+    }
+    fetch()
+  }, [recieverAddress])
 
-    useEffect(() => {
-      if (userBandwidth < 268) {
-        setEstimatedTrx(0.002);
+  useEffect(() => {
+    if (userBandwidth < 268) {
+      setEstimatedTrx(0.002);
+    } else {
+      if (transactions <= 0) {
+        setEstimatedTrx(0.002 + 0.1);
       } else {
-        if (transactions <= 0) {
-          setEstimatedTrx(0.002 + 0.1);
-        } else {
-          setEstimatedTrx(0.002);
-        }
+        setEstimatedTrx(0.002);
       }
-    }, [userBandwidth, transactions]);
+    }
+  }, [userBandwidth, transactions]);
 
-    useEffect(() => {
-        setSenderWalletAddress(walletAddress)
-    }, [walletAddress]);
-
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        reset
-    } = useForm<IFormInput>();
+  useEffect(() => {
+    setSenderWalletAddress(walletAddress)
+  }, [walletAddress]);
 
 
-    const submitHandler: SubmitHandler<IFormInput> = async (data) => {
-        event.preventDefault();
-        showLoader();
-        try {
-          const { recieverAddress, amount } = data; 
-          
-          const trans = await window.tronWeb.transactionBuilder.sendTrx(recieverAddress , amount * Math.pow(10,6) , walletAddress)
-          const sign = await window.tronWeb.trx.sign(trans)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset
+  } = useForm<IFormInput>();
 
-          const transaction = await window.tronWeb.trx.sendRawTransaction(sign);
+
+  const submitHandler: SubmitHandler<IFormInput> = async (data) => {
+    event.preventDefault();
+    showLoader();
+    const { recieverAddress, amount } = data;
+
+    try {
+      let trans;
+
+      if (recieverAddress.includes(".dao") || recieverAddress.includes(".tron") || recieverAddress.includes(".trx")) {
+        const ownerAddress = await getOwner(recieverAddress);
+        const fromHex = await window.tronWeb.address.fromHex(ownerAddress);
+
+        if (fromHex === walletAddress) {
           hideLoader();
-          sweetAlertService.showSuccesMessage("Transaction Successfull","Your TRX has been sent successfully");
-        } catch (error:any) {
+          sweetAlertService.showErrorAlert("Transaction Failed", "Cannot send TRX to same account");
+          return;
+        }else if (fromHex === null) {
           hideLoader();
-          sweetAlertService.showErrorAlert("Transaction Failed",error.message);
+          sweetAlertService.showErrorAlert("Transaction Failed", "No address found on the entered domain");
+          return;
         }
 
-        reset();
-    };
+        trans = await window.tronWeb.transactionBuilder.sendTrx(fromHex, amount * Math.pow(10, 6), walletAddress);
 
-    const handleWalletConnect = () => {
-        event.preventDefault();
-        if (window.tronWeb && !window.tronWeb.ready) {
-            toast('Please Unlock Tron Web First');
-        } else if (window.tronWeb && window.tronWeb.ready) {
-            const base58Address = window.tronWeb.defaultAddress.base58;
-            if (base58Address) {
-                onUpdateTronWalletAddress(base58Address);
-            }
-        } else {
-            toast('Please Install Tron Web Extension.');
-        }
-    };
+      } else {
+        trans = await window.tronWeb.transactionBuilder.sendTrx(recieverAddress, amount * Math.pow(10, 6), walletAddress);
+      }
 
-    return (
-        <SendTrxFormWrapper>
-            <div className='content-header'>
-                <p>Send TRX </p>
-                <p className='balance'> Balance: {walletBalance !== null?  walletBalance :"--"} TRX</p>
-            </div>
-            <form className='content-wrapper' onSubmit={handleSubmit(submitHandler)}>
+      const sign = await window.tronWeb.trx.sign(trans);
+      const transaction = await window.tronWeb.trx.sendRawTransaction(sign);
 
-                <div className='input-box'>
-                    <label>From</label>
-                    <div className='divider' />
-                    <input
-                        type='text'
-                        readOnly
-                        placeholder='Connect your wallet to send TRX'
-                        {...register("sendersAdress", { required: true, })}
-                        defaultValue={senderWalletAddress}
-                    />
-                </div>
-                <div className='input-box'>
-                    <label>To</label>
-                    <div className='divider' />
-                    <input
-                        type='text'
-                        placeholder='Enter reciever wallet address'
-                        {...register("recieverAddress", { required: true, onChange: (event) => setRecieverAddress(event.target.value) })}
-                    />
-                </div>
-                {errors.recieverAddress && <p className='error-text'>This field is required</p>}
-                <div className='input-box'>
-                    <label>Amount</label>
-                    <div className='divider' />
-                    <input
-                        type='number'
-                        placeholder='3'
-                        {...register("amount", { required: true, onChange: (event) => setAmount(event.target.value) })}
-                    />
-                </div>
-                {errors.amount && <p className='error-text'>This field is required</p>}
+      hideLoader();
+      sweetAlertService.showSuccesMessage("Transaction Successful", "Your TRX has been sent successfully");
+    } catch (error) {
+      hideLoader();
+      sweetAlertService.showErrorAlert("Transaction Failed", error.message);
+    }
 
-                <div className='billing-details'>
-                    <div className=' expected-price-box flex-between '>
-                        <p>Estimated Energy Consumption</p>
-                        <span>{` 0`}</span>
-                    </div>
-                    <div className=' expected-price-box flex-between '>
-                        <p>Estimated Bandwidth Consumption</p>
-                        <span>{transactions === 0 ? "100": `268`}</span>
-                    </div>
-                    <div className=' expected-price-box flex-between '>
-                        <p >Estimated TRX Consumption </p>
-                        <span>{`${estimatedTrx.toFixed(4)} TRX`}</span>
-                    </div>
-                </div>
+    reset();
+  };
 
-                {walletAddress ? (
-                    <button className='submit-button' type='submit'>
-                        Send
-                    </button>
-                ) : (
-                    <button className='submit-button' onClick={handleWalletConnect}>
-                        Connect wallet to send TRX
-                    </button>
-                )}
-            </form>
+  const handleWalletConnect = () => {
+    event.preventDefault();
+    if (window.tronWeb && !window.tronWeb.ready) {
+      toast('Please Unlock Tron Web First');
+    } else if (window.tronWeb && window.tronWeb.ready) {
+      const base58Address = window.tronWeb.defaultAddress.base58;
+      if (base58Address) {
+        onUpdateTronWalletAddress(base58Address);
+      }
+    } else {
+      toast('Please Install Tron Web Extension.');
+    }
+  };
 
-        </SendTrxFormWrapper>
-    )
+  return (
+    <SendTrxFormWrapper>
+      <div className='content-header'>
+        <p>Send TRX </p>
+        <p className='balance'> Balance: {walletBalance !== null ? walletBalance : "--"} TRX</p>
+      </div>
+      <form className='content-wrapper' onSubmit={handleSubmit(submitHandler)}>
+
+        <div className='input-box'>
+          <label>From</label>
+          <div className='divider' />
+          <input
+            type='text'
+            readOnly
+            placeholder='Connect your wallet to send TRX'
+            {...register("sendersAdress", { required: true, })}
+            defaultValue={senderWalletAddress}
+          />
+        </div>
+        <div className='input-box'>
+          <label>To</label>
+          <div className='divider' />
+          <input
+            type='text'
+            placeholder='Enter reciever wallet address or domain name'
+            {...register("recieverAddress", { required: true, onChange: (event) => setRecieverAddress(event.target.value) })}
+          />
+        </div>
+        {errors.recieverAddress && <p className='error-text'>This field is required</p>}
+        <div className='input-box'>
+          <label>Amount</label>
+          <div className='divider' />
+          <input
+            type='number'
+            placeholder='3'
+            {...register("amount", { required: true, onChange: (event) => setAmount(event.target.value) })}
+          />
+        </div>
+        {errors.amount && <p className='error-text'>This field is required</p>}
+
+        <div className='billing-details'>
+          <div className=' expected-price-box flex-between '>
+            <p>Estimated Energy Consumption</p>
+            <span>{` 0`}</span>
+          </div>
+          <div className=' expected-price-box flex-between '>
+            <p>Estimated Bandwidth Consumption</p>
+            <span>{transactions === 0 ? "100" : `268`}</span>
+          </div>
+          <div className=' expected-price-box flex-between '>
+            <p >Estimated TRX Consumption </p>
+            <span>{`${estimatedTrx.toFixed(4)} TRX`}</span>
+          </div>
+        </div>
+
+        {walletAddress ? (
+          <button className='submit-button' type='submit'>
+            Send
+          </button>
+        ) : (
+          <button className='submit-button' onClick={handleWalletConnect}>
+            Connect wallet to send TRX
+          </button>
+        )}
+      </form>
+
+    </SendTrxFormWrapper>
+  )
 }
 
 export default SendTrxForm

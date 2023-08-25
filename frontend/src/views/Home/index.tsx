@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import DomainData from './components/DomainData/DomainData'
-import { debounce } from 'lodash';
 
 import { Grid } from 'react-loader-spinner'
 import { SearchIcon } from 'components/Icons'
-import {useTronWalletAddress, useUserActionHandlers} from "../../state/user/hooks";
-import {toast} from "react-toastify";
 
-import TronWeb from 'tronweb'
-import {TNS_CONTRACT_ADDRESS, TRON_FULL_URL} from "../../config/constants";
+import {TNS_CONTRACT_ADDRESS } from "../../config/constants";
 import tnsAbi from '../../config/abi/tns.json';
 import {useTLDs} from "../../state/tlds/hooks";
+import {useDebouncedChangeHandler} from "../../hooks/useDebounced";
 
 export interface IDomainInfo {
   domain: string
@@ -22,59 +19,51 @@ export interface IDomainInfo {
 }
 const Home: React.FC = () => {
   
-  const walletAddress = useTronWalletAddress();
   const allTLDs = useTLDs()
-  const { onUpdateTronWalletAddress } = useUserActionHandlers();
   
   const [searchValue, setSearchValue] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [domainsInfo, setDomainsInfo] = useState<IDomainInfo[]>([])
-  console.log("all tlds", allTLDs)
 
-  const handleSearch = debounce(async (value: string) => {
-    // Perform API search with the value
-    setLoading(true);
-    try {
-      
-      const tronWeb = new TronWeb({
-        fullHost: TRON_FULL_URL,
-        privateKey: '67162e5b6c29261423f731aff081bb65174e289343a779e5ae0695ca16444037',
-      })
-      
-      let tnsContract = await tronWeb.contract(tnsAbi, TNS_CONTRACT_ADDRESS);
-      
-      const searchDomains = allTLDs.map((tld) => `${value}.${tld}`);
-      const availables = await tnsContract.getDomainsAvailibility(searchDomains).call();
-      const domainsInfo = allTLDs.map((tld, index): IDomainInfo => {
-        return {
-          domain: `${value}.${tld}`,
-          price: '1 TRX',
-          tld: tld,
-          name: value,
-          isAvailable: availables[index],
-        }
-      })
-      setDomainsInfo(domainsInfo)
-      console.log(availables)
-    } catch (error) {
-        console.log(error);
-    } finally {
-        setLoading(false);
-    }
-  }, 500);
-
-  const valueChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    setSearchValue(value);
-    handleSearch(value);
-  };
+  const [debouncedSearchValue, setDebouncedSearchValue] = useDebouncedChangeHandler<string>(
+    searchValue,
+    (newValue: string) => {
+      handleSearch(newValue);
+    },
+    500 
+  );
 
   useEffect(() => {
-    return () => {
-      // Cleanup the debounced function
-      handleSearch.cancel();
-    };
-  }, []);
+    if(debouncedSearchValue === ''){
+      setDomainsInfo([])
+    }
+  },[debouncedSearchValue])
+
+  const handleSearch = async (value: string) => {
+    if (value.trim() !== '') {
+      setLoading(true);
+      try {
+        let tnsContract = await window.tronWeb.contract(tnsAbi, TNS_CONTRACT_ADDRESS);
+        const searchDomains = allTLDs.map((tld) => `${value}.${tld}`);
+        const availables = await tnsContract.getDomainsAvailibility(searchDomains).call();
+        const domainsInfo = allTLDs.map((tld, index): IDomainInfo => {
+          return {
+            domain: `${value}.${tld}`,
+            price: '1 TRX',
+            tld: tld,
+            name: value,
+            isAvailable: availables[index],
+          };
+        });
+        setDomainsInfo(domainsInfo);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
 
   const search = () => {
     handleSearch(searchValue);
@@ -93,7 +82,7 @@ const Home: React.FC = () => {
         </p>
       </div>
       <div className="search-field-box">
-        <input type="text" placeholder="Search for your new domain" onChange={valueChangeHandler} />
+        <input type="text" placeholder="Search for your new domain" onChange={(e)=>setDebouncedSearchValue(e.target.value)} />
         <button onClick={search}>
             <SearchIcon/>
         </button>

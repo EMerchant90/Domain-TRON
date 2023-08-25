@@ -16,13 +16,13 @@ export const Container = styled.div`
     width: 33%;
     height: auto;
     border-radius: 10px;
-    color: rgba(0,0,139, 0.7);
+    color: rgb(56,136,255);
     position: absolute;
     margin-left: auto;
     margin-right: auto;
     left: 0;
     right: 0;
-    top: 50%;
+    top: 30%;
     border-radius: 12px;
 `;
 

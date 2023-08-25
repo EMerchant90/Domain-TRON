@@ -7,9 +7,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 
-import TronWeb from 'tronweb'
-import { TRON_FULL_URL } from "../../config/constants";
-
 const Header = () => {
   const { onUpdateTronWalletAddress } = useUserActionHandlers();
   const walletAddress = useTronWalletAddress();
@@ -21,36 +18,39 @@ const Header = () => {
 
         <div className="nav-links">
           <div className="logo-wrapper">
-          <Link href="/">
-            <a>
+            <Link href="/">
+              <a>
 
-            <Logo />
-            </a>
-           </Link>
+                <Logo />
+              </a>
+            </Link>
 
           </div>
 
           {<div className="links">
-     
+
             <Link href="/">
               <a className={router.pathname === '/' ? 'active' : ''}>Your Domains</a>
             </Link>
             <div className="dropdown">
-              <p className={(router.pathname === '/Stake' || router.pathname === '/EnergyRental') ? ' active' : 'dropbtn'}>Stake 2.0
+              <p className={(router.pathname === '/StakeMarketplace' || router.pathname === '/EnergyRental') ? ' active' : 'dropbtn'}>Stake Marketplace
                 <i className="fa fa-caret-down"></i>
               </p>
               <div className="dropdown-content">
-                <Link href="/Stake">
-                <a className={router.pathname === '/Stake' ? 'dropdown-active' : ''}>Stake TRX</a>
+                <Link href="/StakeMarketplace">
+                  <a className={router.pathname === '/StakeMarketplace' ? 'dropdown-active' : ''}>Stake TRX</a>
                 </Link>
                 <Link href="/EnergyRental">
-                <a className={router.pathname === '/EnergyRental' ? 'dropdown-active' : ''}>Energy Rental</a>
+                  <a className={router.pathname === '/EnergyRental' ? 'dropdown-active' : ''}>Energy Rental</a>
                 </Link>
-                
+
               </div>
             </div>
             <Link href="/SendTRX" >
               <a className={router.pathname === '/SendTRX' ? 'active' : ''}>Send TRX</a>
+            </Link>
+            <Link href="/Stake" >
+              <a className={router.pathname === '/Stake' ? 'active' : ''}>Stake 2.0</a>
             </Link>
           </div>}
         </div>

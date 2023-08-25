@@ -3,17 +3,25 @@ import { ModalWrapper, Container, ModalHeader ,ModalBody } from "./ModalStyles"
 import { CloseIcon } from 'components/Icons'
 
 
-const Modal = ({show, title ,children , onClose}) => {
+
+const Modal = ({show, title ,children , changeModal}) => {
+
+    const handleCloseModal = () => {
+        console.log("close modal")
+        changeModal(false); 
+      };
+
     return (
-        <ModalWrapper show={show}>
+        <ModalWrapper show={show} >
             <Container>
             <ModalHeader>
                 <h3>{title}</h3>
-                <CloseIcon onClick={onClose}/>
+                <div onClick={handleCloseModal}> 
+                <CloseIcon />
+                </div>
             </ModalHeader>
             <ModalBody>
                 {children}
-
             </ModalBody>
             </Container>
         </ModalWrapper>

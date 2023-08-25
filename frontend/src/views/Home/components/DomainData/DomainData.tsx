@@ -1,12 +1,11 @@
-import { ForwardArrowIcon, HeartIcon, RedCheckIcon, RedCrossIcon } from "components/Icons";
+import { RedCheckIcon, RedCrossIcon } from "components/Icons";
 import styled from "styled-components";
 import React, { useEffect, useState } from "react";
-import {IDomainInfo} from "../../index";
-import {useTronWalletAddress} from "../../../../state/user/hooks";
-import {toast} from "react-toastify";
-import tnsAbi from "../../../../config/abi/tns.json";
-import {TNS_CONTRACT_ADDRESS} from "../../../../config/constants";
-import {ThreeDots} from "react-loader-spinner";
+import { IDomainInfo } from "../../index";
+import { useTronWalletAddress } from "../../../../state/user/hooks";
+import { toast } from "react-toastify";
+import { ThreeDots } from "react-loader-spinner";
+import MintModal from "./MintModal";
 
 
 interface DomainDataProps {
@@ -15,83 +14,83 @@ interface DomainDataProps {
   searchValue: string
 }
 
-const DomainData = ({domainsInfo, handleSearch, searchValue}) => {
-  
+const DomainData = ({ domainsInfo, handleSearch, searchValue }) => {
+
   const walletAddress = useTronWalletAddress();
-  
-  const [mintDomainIndexInProgress, setMintDomainIndexInProgress] = useState(0)
+
+  const [mintDomainIndexInProgress, setMintDomainIndexInProgress] = useState<number>()
+
+  const [showModal, setShowModal] = useState(false)
+  const [item, setItem] = useState({})
+
+  const handleMintDomain = (item ) => {
+    try {
+      if (!walletAddress || walletAddress.length === 0) {
+        toast('Please Connect Your Wallet First', {
+          type: 'error'
+        })
+        setMintDomainIndexInProgress(-1)
+        throw new Error('Need to connect wallet first before mint.')
+      }
+      setItem(item)
+      setShowModal(true)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setMintDomainIndexInProgress(-1)
+    }
+  }
+
   return (
-        <DomainDataWrapper>
-          
-             <div className="extension-details-box">
-                {domainsInfo.map((item, index) => {
-                    return (
-                    <div
-                      key={index}
-                      className="extension-details">
-                        <div className="detail-card">
-                          {item.available ? <RedCheckIcon/> : <RedCrossIcon/>}
-                            <div className="user-domain">
-                                <p>name<span>.{item.domain}
-                                </span></p>
-                                <p className={item.isAvailable ? "status" : "status-not-available"}>{
-                                    item.isAvailable ? "Available" : "Not Available"
-                                }</p>
-                            </div>
-                        </div>
+    <DomainDataWrapper>
+      <div className="extension-details-box">
+        {domainsInfo.map((item, index) => {
+          return (
+            <div
+              key={index}
+              className="extension-details">
+              <div className="detail-card">
+                {item.isAvailable ? <RedCheckIcon /> : <RedCrossIcon />}
+                <div className="user-domain">
+                  <p><span>{item.domain}
+                  </span></p>
+                  <p className={item.isAvailable ? "status" : "status-not-available"}>{
+                    item.isAvailable ? "Available" : "Not Available"
+                  }</p>
+                </div>
+              </div>
 
-                        <div className="flex-row">
-                            <p className="domain-extension-price">
-                                {item.price}
-                            </p>
-                          {
-                            mintDomainIndexInProgress === index ?
-                              <ThreeDots
-                                height="50"
-                                width="50"
-                                radius="9"
-                                color=" rgb(56, 136, 255)"
-                                ariaLabel="three-dots-loading"
-                                wrapperStyle={{
-                                  paddingLeft: '10px',
-                                  paddingRight: '15px',
-                                }}
-                                visible={true}/>
-                              :
-                            <button className={item.isAvailable ? "mint-button" : "already-minted-button"} disabled={!item.isAvailable}
-                            onClick={async () => {
-                              try {
-                                if(!walletAddress || walletAddress.length === 0) {
-                                  toast('Please Connect Your Wallet First', {
-                                    type: 'error'
-                                  })
-                                  throw new Error('Need to connect wallet first before mint.')
-                                }
-                                debugger;
-                                setMintDomainIndexInProgress(index)
-                                const tronWeb = window.tronWeb
-                                let tnsContract = await tronWeb.contract(tnsAbi, TNS_CONTRACT_ADDRESS);
-                                
-                                const tx = await tnsContract.buyDomain(item.name, item.tld).send({
-                                  value: 10000000,
-                                  shouldPollResponse:true,
-                                });
-                                handleSearch(searchValue)
-                              } catch (error) {
-                                console.error(error)
-                              } finally {
-                                setMintDomainIndexInProgress(-1)
-                              }
-                            }}
-                            >
-                              {item.isAvailable ? "Mint" : "Minted" }</button>
-                          }
-                        </div>
-                    </div>
-                )})}
-
+              <div className="flex-row">
+                <p className="domain-extension-price">
+                  {item.price}
+                </p>
+                {
+                  mintDomainIndexInProgress === index ?
+                    <ThreeDots
+                      height="50"
+                      width="50"
+                      radius="9"
+                      color=" rgb(56, 136, 255)"
+                      ariaLabel="three-dots-loading"
+                      wrapperStyle={{
+                        paddingLeft: '10px',
+                        paddingRight: '15px',
+                      }}
+                      visible={true} />
+                    :
+                    <button className={item.isAvailable ? "mint-button" : "already-minted-button"} disabled={!item.isAvailable}
+                      onClick={()=>handleMintDomain(item)}
+                    >
+                      {item.isAvailable ? "Mint" : "Minted"}</button>
+                }
+              </div>
             </div>
-        </DomainDataWrapper>)
+          )
+        })}
+        {showModal && <MintModal showModal={showModal} setShowModal={setShowModal} item={item} />}
+
+      </div>
+    </DomainDataWrapper>)
 
 }
 

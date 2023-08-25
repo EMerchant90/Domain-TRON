@@ -1,105 +1,84 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import Modal from "components/Modal/Modal"
 import styled from "styled-components"
-import { useForm, SubmitHandler } from "react-hook-form"
 import { useAppLoader } from 'state/loading/hooks/useAppLoader';
-import sweetAlertService from 'utils/SweetAlertServices/sweetAlertServices';
-import { useTronWalletAddress, useUserActionHandlers } from "../../../../state/user/hooks";
-import { toast } from "react-toastify";
+import { useTronWalletAddress } from 'state/user/hooks';
+import { GetEstimatedFee } from 'utils/web3/getTransactionEstimate';
+import { buyDomain } from 'contract/tnsContractInteraction';
+import { getUserEnergy } from 'utils/web3/getWalletEnergy';
 
-interface IFormInput {
-    sendersAdress: string
-    recieverAddress: string
-    amount: number
-}
+const MintModal = ({showModal , setShowModal , item}) => {
+    const walletAdress = useTronWalletAddress();
 
-const MintModal = () => {
-
-    const walletAddress = useTronWalletAddress();
     const { hideLoader, showLoader } = useAppLoader();
-    const { onUpdateTronWalletAddress } = useUserActionHandlers();
+    const [estimatedEnergy, setEstimatedEnergy] = React.useState(0);
+    const [estimatedBandwidth, setEstimatedBandwidth] = React.useState(0);
+    const [estimatedTrx, setEstimatedTrx] = React.useState(0);
+    const [userEnergy, setUserEnergy] = React.useState({EnergyLimit:0,EnergyUsed:0});
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        reset
-    } = useForm<IFormInput>();
+    const unitPricePerEnergy = 0.000420394; 
 
-    const submitHandler: SubmitHandler<IFormInput> = async (data) => {
-        event.preventDefault();
-        console.log(data);
-        showLoader();
-        try {
+    useEffect(()=>{
+      if(estimatedEnergy != 0) return
+      const fetch = async () => {
+        const userEnergy = await getUserEnergy(walletAdress);
+        const get = await GetEstimatedFee(walletAdress, item);
+  
+        setUserEnergy(userEnergy)
+        setEstimatedEnergy(get.energy)
+        setEstimatedBandwidth(get.bandwidth)
+      }
+      fetch();
 
-            hideLoader();
-            console.log('Transaction initiated:',);
-            sweetAlertService.showSuccessAlert("Transaction Successfull", "Your TRX has been sent successfully");
-        } catch (error: any) {
-            hideLoader();
-            sweetAlertService.showErrorAlert("Transaction Failed", error.message);
-        }
+    },[])
 
-        reset();
-    };
+    useEffect(()=>{
+      setEstimatedTrx( (estimatedEnergy - (userEnergy.EnergyLimit - userEnergy.EnergyUsed)) * unitPricePerEnergy )
+    },[estimatedEnergy])
 
-    const handleWalletConnect = () => {
-        event.preventDefault();
-        if (window.tronWeb && !window.tronWeb.ready) {
-            toast('Please Unlock Tron Web First');
-        } else if (window.tronWeb && window.tronWeb.ready) {
-            const base58Address = window.tronWeb.defaultAddress.base58;
-            if (base58Address) {
-                onUpdateTronWalletAddress(base58Address);
-            }
-        } else {
-            toast('Please Install Tron Web Extension.');
-        }
-    };
+    const handleMintDomain =  () => {
+            showLoader();
+            const mint =  buyDomain(item.name, item.tld).then((res)=>{
+            }).finally(()=>{
+              setShowModal(false);
+              hideLoader()
+            });
+
+    }
 
     return (
-        <Modal show={true} title={"Mint Modal"} onClose={()=>{}}>
-            <MintModalWrapper>
+        <Modal show={showModal} title={"Mint Modal"} changeModal={setShowModal}>
+        <MintModalWrapper>
 
                 <p className='content-heading'>
-                    Enter the following data to mint a domain
+                Expected fee consumption for this transaction
                 </p>
-
-                <form className='content-wrapper' onSubmit={handleSubmit(submitHandler)}>
-
-                    <div className='input-box'>
-                        <label>To</label>
-                        <div className='divider' />
-                        <input
-                            type='text'
-                            placeholder='Enter reciever wallet address'
-                            {...register("recieverAddress", { required: true, })}
-                        />
+              
+                <div className='billing-details'>
+                    <div className=' expected-price-box flex-between '>
+                        <p>Estimated Energy Consumption</p>
+                        <span>{estimatedEnergy}</span>
                     </div>
-                    {errors.recieverAddress && <p className='error-text'>This field is required</p>}
-                    <div className='input-box'>
-                        <label>Amount</label>
-                        <div className='divider' />
-                        <input
-                            type='number'
-                            placeholder='3'
-                            {...register("amount", { required: true, })}
-                        />
+                    <div className=' expected-price-box flex-between '>
+                        <p>Estimated Bandwidth Consumption</p>
+                        <span>{ estimatedBandwidth != 0 ? estimatedBandwidth: `475`}</span>
                     </div>
-                    {errors.amount && <p className='error-text'>This field is required</p>}
+                    <div className=' expected-price-box flex-between '>
+                        <p >Estimated TRX Consumption </p>
+                        <span>{`${estimatedTrx} TRX` }</span>
+                    </div>
+                </div>
 
-
-
-                    {walletAddress ? (
-                        <button className='submit-button' type='submit'>
-                            Send
-                        </button>
-                    ) : (
-                        <button className='submit-button' onClick={handleWalletConnect}>
-                            Connect wallet to mint
-                        </button>
-                    )}
-                </form>
+                <div className='button-box'>
+                <button className='cancel-button' onClick={()=>setShowModal(false)}>
+                    Cancel
+                </button>
+                <button className='submit-button' onClick={handleMintDomain}>
+                    Mint Now 
+                </button>
+       
+                </div>
+       
             </MintModalWrapper>
 
         </Modal>
@@ -117,70 +96,36 @@ const MintModalWrapper = styled.div`
         font-size: 16px;
         font-weight: 600;
         margin:0;
-        margin-bottom: 20px;
+        color: rgb(155,155,166);
+
     }
 
-
-    .input-box{
+    .button-box{
         display:flex;
         flex-direction:row;
-        align-items:center;
-        justify-content:center;
-        background-color: rgb(241,243,243);
-        border-radius: 5px;
-        padding: 15px;
-        margin-bottom: 10px;
-        label{
-          font-weight: 400;
-          font-size: 14px;
-          line-height: 20px;
-          min-width: 50px;
-            display:flex;
-            justify-content:center;
-        }
-    
-        input{
-          outline: none;
-          border: none;
-          margin-right: 10px;
-          font-size: 14px;
-          font-weight: 600;
-          background-color: transparent;
-          height: 30px;
-          width: -webkit-fill-available;
-        }
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-          -webkit-appearance: none;
-          margin: 0;  
-        }
-        input::placeholder {
-          color: rgba(200, 200, 200, 1);
-        }
-    
-        /* Firefox */
-        input[type=number] {
-          -moz-appearance: textfield;
-        }
-    
-        span{
-          font-weight: 400;
-          font-size: 14px;
-        }
-    
-    
-        & .divider{
-            width: 1px;
-            height: 30px;
-            background-color: rgba(0,0,0,.1);
-            margin: 0 10px;
-        }
-    
+        justify-content:space-between;
+        margin-top: 20px;
+    }
+    .cancel-button{
+        background: #fff;
+        padding: 10px 15px;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 14px;
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        margin-right: 10px;
+        width: 100%;
+    } 
+     .cancel-button:hover{
+        background: rgba(255, 0, 0 ,0.5);
+        color: #fff
+        border:none;
+        outline:none;
       }
 
       .submit-button{
         width: 100%;
-        margin-top:25px;
         padding: 10px 15px;
         border-radius: 8px;
         border:none;
@@ -201,6 +146,47 @@ const MintModalWrapper = styled.div`
         font-weight: 500;
         color:red;
         margin:0 0 10px 
+      }
+
+      .flex-between{
+        display:flex;
+        flex-direction:row;
+        align-items:center;
+        justify-content:space-between;
+        }
+      .border-bottom{
+        border-bottom: 1px solid  #fff;
+      }
+    
+      .billing-details{
+        padding: 12px 20px;
+        background-color: rgb(241,243,243);
+        border-radius: 8px;
+        margin-top: 20px;
+      }
+    
+    
+      .expected-price-box{
+        display:flex;
+        flex-direction:row;
+        align-items:center;
+        padding: 10px 0;
+    
+        img{
+          filter: brightness(0) saturate(100%) invert(48%) sepia(90%) saturate(637%) hue-rotate(195deg) brightness(102%) contrast(107%);
+          margin-right: 10px;
+      }
+      p{
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 17px;
+        color: 	#5A5A5A;
+        margin:0;
+      }
+      span{
+        font-weight: 600;
+        font-size: 12px;
+      }
       }
 
 `
