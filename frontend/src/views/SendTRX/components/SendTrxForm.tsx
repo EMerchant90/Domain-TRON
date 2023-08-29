@@ -9,7 +9,7 @@ import sweetAlertService from 'utils/SweetAlertServices/sweetAlertServices';
 import { getUserBandwidth } from 'utils/web3/getWalletBandwidth';
 import { getUserTransactions } from 'utils/web3/getWalletTransactions';
 import { getOwner } from 'contract/tnsContractInteraction';
-
+import { isValidTronAddress } from 'utils/isValidAddress';
 interface IFormInput {
   sendersAdress: string
   recieverAddress: string
@@ -23,6 +23,8 @@ const SendTrxForm = () => {
 
   const walletAddress = useTronWalletAddress();
   const { onUpdateTronWalletAddress } = useUserActionHandlers();
+
+  const DomainRegex = /\.(dao|tron|trx)$/;
 
   const [recieverAddress, setRecieverAddress] = useState('');
   const [amount, setAmount] = useState(0);
@@ -79,40 +81,57 @@ const SendTrxForm = () => {
     showLoader();
     const { recieverAddress, amount } = data;
 
-    try {
-      let trans;
+    let trans;
 
-      if (recieverAddress.includes(".dao") || recieverAddress.includes(".tron") || recieverAddress.includes(".trx")) {
+    if (recieverAddress.includes(".dao") || recieverAddress.includes(".tron") || recieverAddress.includes(".trx")) {
+      try {
+        if (!DomainRegex.test(recieverAddress)) {
+          hideLoader();
+          sweetAlertService.showErrorAlert("Error", "Invalid domain name");
+          return;
+        }
+
         const ownerAddress = await getOwner(recieverAddress);
         const fromHex = await window.tronWeb.address.fromHex(ownerAddress);
-
+        console.log(fromHex);
         if (fromHex === walletAddress) {
           hideLoader();
           sweetAlertService.showErrorAlert("Transaction Failed", "Cannot send TRX to same account");
           return;
-        }else if (fromHex === null) {
-          hideLoader();
-          sweetAlertService.showErrorAlert("Transaction Failed", "No address found on the entered domain");
-          return;
         }
 
         trans = await window.tronWeb.transactionBuilder.sendTrx(fromHex, amount * Math.pow(10, 6), walletAddress);
+        const sign = await window.tronWeb.trx.sign(trans);
+        const transaction = await window.tronWeb.trx.sendRawTransaction(sign);
 
-      } else {
-        trans = await window.tronWeb.transactionBuilder.sendTrx(recieverAddress, amount * Math.pow(10, 6), walletAddress);
+      } catch (error: any) {
+        hideLoader();
+        sweetAlertService.showErrorAlert("Transaction Failed", "No address found on the entered domain");
+        return;
       }
 
-      const sign = await window.tronWeb.trx.sign(trans);
-      const transaction = await window.tronWeb.trx.sendRawTransaction(sign);
+    } else {
+      try {
+        const isValid = await isValidTronAddress(recieverAddress)
+        if (!isValid) {
+          hideLoader();
+          sweetAlertService.showErrorAlert("Error", "Invalid wallet address");
+          return;
+        }
 
-      hideLoader();
-      sweetAlertService.showSuccesMessage("Transaction Successful", "Your TRX has been sent successfully");
-    } catch (error) {
-      hideLoader();
-      sweetAlertService.showErrorAlert("Transaction Failed", error.message);
+        trans = await window.tronWeb.transactionBuilder.sendTrx(recieverAddress, amount * Math.pow(10, 6), walletAddress);
+        const sign = await window.tronWeb.trx.sign(trans);
+        const transaction = await window.tronWeb.trx.sendRawTransaction(sign);
+
+        hideLoader();
+        sweetAlertService.showSuccesMessage("Transaction Successful", "Your TRX has been sent successfully");
+      } catch (error: any) {
+        hideLoader();
+        sweetAlertService.showErrorAlert("Transaction Failed", error.message);
+      }
+
+      reset();
     }
-
-    reset();
   };
 
   const handleWalletConnect = () => {
@@ -144,7 +163,6 @@ const SendTrxForm = () => {
             type='text'
             readOnly
             placeholder='Connect your wallet to send TRX'
-            {...register("sendersAdress", { required: true, })}
             defaultValue={senderWalletAddress}
           />
         </div>
@@ -189,7 +207,7 @@ const SendTrxForm = () => {
             Send
           </button>
         ) : (
-          <button className='submit-button' onClick={handleWalletConnect}>
+          <button className='submit-button' type='button' onClick={handleWalletConnect}>
             Connect wallet to send TRX
           </button>
         )}

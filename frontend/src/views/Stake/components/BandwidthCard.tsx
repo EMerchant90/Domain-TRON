@@ -1,9 +1,16 @@
 import React from 'react'
 import styled from 'styled-components'
 import { SemiCircleProgress } from "react-semicircle-progressbar"
+import ResourceModal from './ResourceModal'
+import DelegateResourcesModal from './DelegateResourcesModal'
 
 
-const BandwidthCard = () => {
+const BandwidthCard = ({bandwidthInfo}) => {
+    const [showResourceModal, setShowResourceModal] = React.useState(false);
+    const [showDelegateModal, setDelegateShowModal] = React.useState(false);
+
+    const remainingPercentage =  Math.round((bandwidthInfo.netRemaining / bandwidthInfo.netLimit) * 100)
+            
   return (
     <BandwidthCardWrapper>
            <p className='content-header'>
@@ -11,16 +18,17 @@ const BandwidthCard = () => {
             </p>
 
             <div className='flex-row'>
+                <div>
                 <SemiCircleProgress
-                    percentage={80}
+                    percentage={remainingPercentage}
                     size={{
                         width: 120,
                         height: 120,
                     }}
                     strokeWidth={5}
                     strokeColor="rgb(37, 210, 198)"
-                />
-
+                    />
+                    </div>
                 <div className='detail-box'>
                     <div className='flex-row'>
                         <p className='key'>
@@ -45,14 +53,18 @@ const BandwidthCard = () => {
             </div>
             <div className='flex-row'>
                 <p>
-                    Total ≈ 121000
+                    Total ≈  {bandwidthInfo.netLimit} 
                 </p>
                 <div className='button-box'>
-                    <button className='get-button'>Get Bandwidth</button>
-                    <button className='delegate-button'>Delegate to others</button>
+                    <button className='get-button' onClick={()=>setShowResourceModal(true)}>Get Bandwidth</button>
+                    <button className='delegate-button'  onClick={()=>setDelegateShowModal(true)}>Delegate to others</button>
 
                 </div>
             </div>
+
+            {showResourceModal && <ResourceModal showModal={showResourceModal} setShowModal={setShowResourceModal} index={1} />}
+            {showDelegateModal && <DelegateResourcesModal showModal={showDelegateModal} setShowModal={setDelegateShowModal} index={1} />}
+
     </BandwidthCardWrapper>
   )
 }
@@ -134,6 +146,7 @@ flex-direction:column;
     padding: 8px 20px;
     text-align: center;
     margin-right:10px;
+    border: none;
 }
 .get-button:hover{
     background-color: rgba(227,93,88,0.7);

@@ -6,83 +6,94 @@ import { useTronWalletAddress } from 'state/user/hooks';
 import { GetEstimatedFee } from 'utils/web3/getTransactionEstimate';
 import { buyDomain } from 'contract/tnsContractInteraction';
 import { getUserEnergy } from 'utils/web3/getWalletEnergy';
+import CircledQuestion from 'components/Icons/CircledQuestionMark/CircledQuestion';
 
-const MintModal = ({showModal , setShowModal , item}) => {
-    const walletAdress = useTronWalletAddress();
+const MintModal = ({ showModal, setShowModal, item }) => {
+  const walletAdress = useTronWalletAddress();
 
-    const { hideLoader, showLoader } = useAppLoader();
-    const [estimatedEnergy, setEstimatedEnergy] = React.useState(0);
-    const [estimatedBandwidth, setEstimatedBandwidth] = React.useState(0);
-    const [estimatedTrx, setEstimatedTrx] = React.useState(0);
-    const [userEnergy, setUserEnergy] = React.useState({EnergyLimit:0,EnergyUsed:0});
+  const { hideLoader, showLoader } = useAppLoader();
+  const [estimatedEnergy, setEstimatedEnergy] = React.useState(0);
+  const [estimatedBandwidth, setEstimatedBandwidth] = React.useState(0);
+  const [estimatedTrx, setEstimatedTrx] = React.useState(0);
+  const [userEnergy, setUserEnergy] = React.useState({ EnergyLimit: 0, EnergyUsed: 0 });
+  const [loading, setLoading] = React.useState(true);
+  const unitPricePerEnergy = 0.000420394;
 
-    const unitPricePerEnergy = 0.000420394; 
+  useEffect(() => {
+    if (estimatedEnergy != 0) return
+    const fetch = async () => {
+      const userEnergy = await getUserEnergy(walletAdress);
+      const get = await GetEstimatedFee(walletAdress, item);
+      setLoading(false)
 
-    useEffect(()=>{
-      if(estimatedEnergy != 0) return
-      const fetch = async () => {
-        const userEnergy = await getUserEnergy(walletAdress);
-        const get = await GetEstimatedFee(walletAdress, item);
-  
-        setUserEnergy(userEnergy)
-        setEstimatedEnergy(get.energy)
-        setEstimatedBandwidth(get.bandwidth)
-      }
-      fetch();
-
-    },[])
-
-    useEffect(()=>{
-      setEstimatedTrx( (estimatedEnergy - (userEnergy.EnergyLimit - userEnergy.EnergyUsed)) * unitPricePerEnergy )
-    },[estimatedEnergy])
-
-    const handleMintDomain =  () => {
-            showLoader();
-            const mint =  buyDomain(item.name, item.tld).then((res)=>{
-            }).finally(()=>{
-              setShowModal(false);
-              hideLoader()
-            });
-
+      setUserEnergy(userEnergy)
+      setEstimatedEnergy(get.energy)
+      setEstimatedBandwidth(get.bandwidth)
     }
+    fetch();
 
-    return (
-        <Modal show={showModal} title={"Mint Modal"} changeModal={setShowModal}>
-        <MintModalWrapper>
+  }, [])
 
-                <p className='content-heading'>
-                Expected fee consumption for this transaction
-                </p>
-              
-                <div className='billing-details'>
-                    <div className=' expected-price-box flex-between '>
-                        <p>Estimated Energy Consumption</p>
-                        <span>{estimatedEnergy}</span>
-                    </div>
-                    <div className=' expected-price-box flex-between '>
-                        <p>Estimated Bandwidth Consumption</p>
-                        <span>{ estimatedBandwidth != 0 ? estimatedBandwidth: `475`}</span>
-                    </div>
-                    <div className=' expected-price-box flex-between '>
-                        <p >Estimated TRX Consumption </p>
-                        <span>{`${estimatedTrx} TRX` }</span>
-                    </div>
-                </div>
+  useEffect(() => {
+    setEstimatedTrx((estimatedEnergy - (userEnergy.EnergyLimit - userEnergy.EnergyUsed)) * unitPricePerEnergy)
+  }, [estimatedEnergy])
 
-                <div className='button-box'>
-                <button className='cancel-button' onClick={()=>setShowModal(false)}>
-                    Cancel
-                </button>
-                <button className='submit-button' onClick={handleMintDomain}>
-                    Mint Now 
-                </button>
-       
-                </div>
-       
-            </MintModalWrapper>
+  const handleMintDomain = () => {
+    showLoader();
+    const mint = buyDomain(item.name, item.tld).then((res) => {
+    }).finally(() => {
+      setShowModal(false);
+      hideLoader()
+    });
 
-        </Modal>
-    )
+  }
+
+  return (
+    <Modal show={showModal} title={"Mint"} changeModal={setShowModal}>
+      <MintModalWrapper>
+
+        <div className='content-heading'>
+          Expected fee consumption for this transaction <div className="tooltip"><CircledQuestion />
+            <span className="tooltiptext"><b> Resources Consumed = Bandwidth + Energy</b><br /><br />
+              <b>Bandwidth: </b>
+              You can only use free Bandwidth or Bandwidth from staking to pay transaction fee. If your Bandwidth is insufficient, then the entire fee needs to be paid in TRX.<br /><br />
+              <b>Energy: </b>
+              If your Energy is insufficient, the remaining fee after deducting your entire Energy can be paid in TRX.<br /><br />
+              Energy consumed is calculated on the assumption that
+              the user will pay for all resources, while the actual on- chain data may vary.</span>
+
+          </div>
+        </div>
+
+        <div className='billing-details'>
+          <div className=' expected-price-box flex-between '>
+            <p>Estimated Energy Consumption</p>
+            <span>{loading ? "Calculating..." : estimatedEnergy}</span>
+          </div>
+          <div className=' expected-price-box flex-between '>
+            <p>Estimated Bandwidth Consumption</p>
+            <span>{loading ? "Calculating..." : estimatedBandwidth}</span>
+          </div>
+          <div className=' expected-price-box flex-between '>
+            <p >Estimated TRX Consumption </p>
+            <span>{`${estimatedTrx ? estimatedTrx : "0"} TRX`}</span>
+          </div>
+        </div>
+
+        <div className='button-box'>
+          <button className='cancel-button' onClick={() => setShowModal(false)}>
+            Cancel
+          </button>
+          <button className='submit-button' onClick={handleMintDomain}>
+            Mint Now
+          </button>
+
+        </div>
+
+      </MintModalWrapper>
+
+    </Modal>
+  )
 }
 
 export default MintModal
@@ -187,6 +198,35 @@ const MintModalWrapper = styled.div`
         font-weight: 600;
         font-size: 12px;
       }
+      }
+
+
+      // tooltip
+      .tooltip {
+        position: relative;
+        display: inline-block;
+        margin-left: 5px;
+      }
+      
+      .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 250px;
+        background-color: rgb(241,243,243);
+        text-align: left;
+        border-radius: 6px;
+        padding: 10px ;
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 17px;
+        color: #5A5A5A;
+        /* Position the tooltip */
+        position: absolute;
+        z-index: 1;
+      }
+      
+      .tooltip:hover .tooltiptext {
+        visibility: visible;
       }
 
 `

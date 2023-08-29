@@ -1,8 +1,19 @@
 import React from 'react'
 import styled from 'styled-components'
 import { SemiCircleProgress } from "react-semicircle-progressbar"
+import ResourceModal from './ResourceModal'
+import DelegateResourcesModal from './DelegateResourcesModal'
 
-const EnergyCard = () => {
+const EnergyCard = ({ energyInfo }) => {
+    const [showResourceModal, setShowResourceModal] = React.useState(false);
+    const [showDelegateModal, setDelegateShowModal] = React.useState(false);
+
+    const remainingEnergy = () => {
+        if (energyInfo) {
+            return (energyInfo.energyRemaining / energyInfo.energyLimit) * 100
+        }
+    }
+
     return (
         <EnergyCardWrapper>
             <p className='content-header'>
@@ -11,7 +22,7 @@ const EnergyCard = () => {
 
             <div className='flex-row'>
                 <SemiCircleProgress
-                    percentage={80}
+                    percentage={remainingEnergy()}
                     size={{
                         width: 120,
                         height: 120,
@@ -44,14 +55,16 @@ const EnergyCard = () => {
             </div>
             <div className='flex-row'>
                 <p>
-                    Total ≈ 121000
+                    Total ≈ {energyInfo ? energyInfo.energyLimit : "--"}
                 </p>
-                <div className='button-box'>
-                    <button className='get-button'>Get Energy</button>
-                    <button className='delegate-button'>Delegate to others</button>
 
+                <div className='button-box'>
+                    <button className='get-button' onClick={() => setShowResourceModal(true)}>Get Energy</button>
+                    <button className='delegate-button' onClick={() => setDelegateShowModal(true)}>Delegate to others</button>
                 </div>
             </div>
+            {showResourceModal && <ResourceModal showModal={showResourceModal} setShowModal={setShowResourceModal} index={0} />}
+            {showDelegateModal && <DelegateResourcesModal showModal={showDelegateModal} setShowModal={setDelegateShowModal} index={0} />}
         </EnergyCardWrapper>
     )
 }
@@ -130,6 +143,7 @@ margin-right:20px;
     min-width: 110px;
     padding: 8px 20px;
     text-align: center;
+    border: none;
     margin-right:10px;
 }
 .get-button:hover{
