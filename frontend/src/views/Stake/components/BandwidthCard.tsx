@@ -1,15 +1,37 @@
-import React from 'react'
+import React , {useEffect} from 'react'
 import styled from 'styled-components'
 import { SemiCircleProgress } from "react-semicircle-progressbar"
-import ResourceModal from './ResourceModal'
-import DelegateResourcesModal from './DelegateResourcesModal'
+import ResourceModal from './Modals/ResourceModal'
+import DelegateResourcesModal from './Modals/DelegateResourcesModal'
 
 
 const BandwidthCard = ({bandwidthInfo}) => {
     const [showResourceModal, setShowResourceModal] = React.useState(false);
     const [showDelegateModal, setDelegateShowModal] = React.useState(false);
 
-    const remainingPercentage =  Math.round((bandwidthInfo.netRemaining / bandwidthInfo.netLimit) * 100)
+    const [bandwidthDelegatedToOthers, setBandwidthDelegatedToOthers] = React.useState(0)
+    const [bandwidthFromStaking , setBandwidthFromStaking] = React.useState(0)
+    const [bandwidthDelegatedByOthers  , setBandwidthDelegatedByOthers] = React.useState(0)
+
+    useEffect(()=>{
+
+        const frozenTrxForBandwidthDelegation = bandwidthInfo.delegatedFrozenV2BalanceForBandwidth / Math.pow(10,6)
+        const delegatedToOthers = frozenTrxForBandwidthDelegation * bandwidthInfo.netCost
+        setBandwidthDelegatedToOthers(delegatedToOthers)
+
+        const balanceFrozenForBandwidthV2 = bandwidthInfo.frozenForBandWidthV2 / Math.pow(10,6)
+        const bandwidthGainedFromStaking = balanceFrozenForBandwidthV2 * bandwidthInfo.netCost
+        setBandwidthFromStaking(bandwidthGainedFromStaking)
+
+        if( Math.round(bandwidthInfo.bandwidth.netLimit - bandwidthGainedFromStaking) < 1 ){
+            setBandwidthDelegatedByOthers(0)
+        }else{
+            const delegatedByOthers = bandwidthInfo.bandwidth.netLimit - bandwidthGainedFromStaking + delegatedToOthers
+            setBandwidthDelegatedByOthers(delegatedByOthers)
+        }
+},[bandwidthInfo])
+
+    const remainingPercentage =  Math.round((bandwidthInfo.bandwidth.netRemaining / bandwidthInfo.bandwidth.netLimit) * 100)
             
   return (
     <BandwidthCardWrapper>
@@ -34,26 +56,26 @@ const BandwidthCard = ({bandwidthInfo}) => {
                         <p className='key'>
                             <span className='colored-box' />
                             From Staking</p>
-                        <span className='value'>+81000</span>
+                        <span className='value'>+{bandwidthFromStaking.toFixed(2)}</span>
                     </div>
                     <div className='flex-row'>
                         <p className='key'>
                             <span className='colored-box' />
                             Delegated by others</p>
-                        <span className='value'>+50000</span>
+                        <span className='value'>+{bandwidthDelegatedByOthers}</span>
                     </div>
                     <div className='flex-row'>
                         <p className='key'>
                             <span className='colored-box' />
                             Delegated to others</p>
-                        <span className='value'>-10000</span>
+                        <span className='value'>-{bandwidthDelegatedToOthers.toFixed(2)}</span>
                     </div>
                 </div>
 
             </div>
             <div className='flex-row'>
                 <p>
-                    Total ≈  {bandwidthInfo.netLimit} 
+                    Total ≈  {bandwidthInfo.bandwidth.netLimit} 
                 </p>
                 <div className='button-box'>
                     <button className='get-button' onClick={()=>setShowResourceModal(true)}>Get Bandwidth</button>
@@ -100,10 +122,10 @@ flex-direction:column;
     display:flex;
     flex-direction:column;
     margin-left:20px;
-    width:60%;
 }
 .key{
     margin:0;
+    min-width: 190px;
     color: #73787b;
     font-size: 14px;
     font-weight: 400;
@@ -121,7 +143,7 @@ flex-direction:column;
 
 .value{
     margin:0;
-    font-size: 14px;
+    font-size: 14px !important;
     font-weight: 600;
     color: #101010;
     margin-bottom:10px;

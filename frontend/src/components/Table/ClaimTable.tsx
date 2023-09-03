@@ -1,10 +1,9 @@
-import CountdownTimer from 'components/CountDownTimer/CountDownTimer';
 import React from 'react';
 import styled from 'styled-components';
 import { claimUnstakedTrx } from 'contract/contractInteraction';
 import { useTronWalletAddress } from 'state/user/hooks';
 import { useCountDown } from 'hooks/useCountDown';
-import { log } from 'console';
+
 
 
 const ClaimTable = ({ data }) => {
@@ -16,18 +15,6 @@ const ClaimTable = ({ data }) => {
     console.log(result)
 
   }
-
-
-  // const HandleCountDown = (cp) => {
-
-
-  //   return (
-  //     <div className='countdown-date'>
-  //       {time !== 0 ? counter : "Claim now"}
-  //     </div>
-
-  //   )
-  // }
 
   const HandleCountDown1 = ({item, index}) => {
     const { counter, isEnded } = useCountDown({ targetTimestamp: item['claimTime'].toNumber() });

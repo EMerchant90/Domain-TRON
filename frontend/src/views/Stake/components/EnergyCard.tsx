@@ -1,16 +1,35 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { SemiCircleProgress } from "react-semicircle-progressbar"
-import ResourceModal from './ResourceModal'
-import DelegateResourcesModal from './DelegateResourcesModal'
+import ResourceModal from './Modals/ResourceModal'
+import DelegateResourcesModal from './Modals/DelegateResourcesModal'
 
 const EnergyCard = ({ energyInfo }) => {
     const [showResourceModal, setShowResourceModal] = React.useState(false);
     const [showDelegateModal, setDelegateShowModal] = React.useState(false);
+    const [energyDelegatedToOthers, setEnergyDelegatedToOthers] = React.useState(0)
+    const [energyFromStaking , setEnergyFromStaking] = React.useState(0)
+    const [energyDelegatedByOthers  , setEnergyDelegatedByOthers] = React.useState(0)
+
+    useEffect(()=>{
+
+            const frozenTrxForEnergyDelegation = energyInfo.delegatedFrozenV2BalanceForEnergy / Math.pow(10,6)
+            const delegatedToOthers = frozenTrxForEnergyDelegation * energyInfo.energyCost
+            setEnergyDelegatedToOthers(delegatedToOthers)
+
+            const trxForEnergyStaking = energyInfo.totalFrozenV2 - energyInfo.frozenForBandWidthV2 
+            const balanceFrozenForEnergyV2 = trxForEnergyStaking / Math.pow(10,6)
+            const energyGainedFromStaking = balanceFrozenForEnergyV2 * energyInfo.energyCost
+            setEnergyFromStaking(energyGainedFromStaking)
+
+            const delegatedByOthers = energyInfo.bandwidth.energyLimit - energyGainedFromStaking + delegatedToOthers
+            setEnergyDelegatedByOthers(delegatedByOthers)
+ 
+    },[energyInfo])
 
     const remainingEnergy = () => {
         if (energyInfo) {
-            return (energyInfo.energyRemaining / energyInfo.energyLimit) * 100
+            return (energyInfo.bandwidth.energyRemaining / energyInfo.bandwidth.energyLimit) * 100
         }
     }
 
@@ -36,26 +55,26 @@ const EnergyCard = ({ energyInfo }) => {
                         <p className='key'>
                             <span className='colored-box' />
                             From Staking</p>
-                        <span className='value'>+81000</span>
+                        <span className='value'>+{energyFromStaking.toFixed(2)}</span>
                     </div>
                     <div className='flex-row'>
                         <p className='key'>
                             <span className='colored-box' />
                             Delegated by others</p>
-                        <span className='value'>+50000</span>
+                        <span className='value'>+{energyDelegatedByOthers.toFixed(2)}</span>
                     </div>
                     <div className='flex-row'>
                         <p className='key'>
                             <span className='colored-box' />
                             Delegated to others</p>
-                        <span className='value'>-10000</span>
+                        <span className='value'>-{energyDelegatedToOthers.toFixed(2)}</span>
                     </div>
                 </div>
 
             </div>
             <div className='flex-row'>
                 <p>
-                    Total ≈ {energyInfo ? energyInfo.energyLimit : "--"}
+                    Total ≈ {energyInfo ? energyInfo.bandwidth.energyLimit : "--"}
                 </p>
 
                 <div className='button-box'>
@@ -99,10 +118,10 @@ margin-right:20px;
     display:flex;
     flex-direction:column;
     margin-left:20px;
-    width:60%;
 }
 .key{
     margin:0;
+    min-width: 190px;
     color: #73787b;
     font-size: 14px;
     font-weight: 400;
@@ -120,7 +139,7 @@ margin-right:20px;
 
 .value{
     margin:0;
-    font-size: 14px;
+    font-size: 14px !important;
     font-weight: 600;
     color: #101010;
     margin-bottom:10px;

@@ -201,7 +201,6 @@ const MintModalWrapper = styled.div`
       }
 
 
-      // tooltip
       .tooltip {
         position: relative;
         display: inline-block;
