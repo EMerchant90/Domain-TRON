@@ -1,4 +1,4 @@
-import React , {useState , useEffect} from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import Modal from 'components/Modal/Modal'
 import { useForm, SubmitHandler } from "react-hook-form"
@@ -25,7 +25,6 @@ const ReclaimModal = ({ showModal, setShowModal, data }) => {
 
     useEffect(() => {
         const fetch = async () => {
-            console.log("res")
             if (data["Resource Type"] === "Energy") {
                 const res = await getFrozenEnergyRatio();
                 setEnergyPerTrx(res)
@@ -57,13 +56,11 @@ const ReclaimModal = ({ showModal, setShowModal, data }) => {
         try {
             showLoader()
             const tronweb = window.tronWeb
-            console.log("returnResource",returnResource)
-            const reclaimingTrx =  returnResource > 1 ?  Math.round(returnResource) *1000000 :(Math.round(returnResource)+1) * 1000000  
+            const reclaimingTrx = returnResource > 1 ? Math.round(returnResource) * 1000000 : (Math.round(returnResource) + 1) * 1000000
 
-            const method = await tronweb.transactionBuilder.undelegateResource(reclaimingTrx, data["To"], data["Resource Type"] === "Energy" ? "ENERGY":"BANDWIDTH", walletAddress)
+            const method = await tronweb.transactionBuilder.undelegateResource(reclaimingTrx, data["To"], data["Resource Type"] === "Energy" ? "ENERGY" : "BANDWIDTH", walletAddress)
             const sign = await window.tronWeb.trx.sign(method);
             const transaction = await window.tronWeb.trx.sendRawTransaction(sign);
-            console.log("transaction",transaction)
 
             setShowModal(false)
             hideLoader()
@@ -81,7 +78,7 @@ const ReclaimModal = ({ showModal, setShowModal, data }) => {
             <ReclaimModalWrapper>
 
                 <p className='content-heading'>
-                   From : {truncateAddress( data["From"] , 10, 10)}
+                    From : {truncateAddress(data["From"], 10, 10)}
                 </p>
                 <form className='content-wrapper' onSubmit={handleSubmit(submitHandler)}>
                     <div className='input-box'>

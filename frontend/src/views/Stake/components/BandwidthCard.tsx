@@ -1,56 +1,62 @@
-import React , {useEffect} from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { SemiCircleProgress } from "react-semicircle-progressbar"
 import ResourceModal from './Modals/ResourceModal'
 import DelegateResourcesModal from './Modals/DelegateResourcesModal'
 
 
-const BandwidthCard = ({bandwidthInfo}) => {
+const BandwidthCard = ({ bandwidthInfo, delegatedBandwidthInfo }) => {
     const [showResourceModal, setShowResourceModal] = React.useState(false);
     const [showDelegateModal, setDelegateShowModal] = React.useState(false);
 
     const [bandwidthDelegatedToOthers, setBandwidthDelegatedToOthers] = React.useState(0)
-    const [bandwidthFromStaking , setBandwidthFromStaking] = React.useState(0)
-    const [bandwidthDelegatedByOthers  , setBandwidthDelegatedByOthers] = React.useState(0)
+    const [bandwidthFromStaking, setBandwidthFromStaking] = React.useState(0)
+    const [bandwidthDelegatedByOthers, setBandwidthDelegatedByOthers] = React.useState(0)
 
-    useEffect(()=>{
 
-        const frozenTrxForBandwidthDelegation = bandwidthInfo.delegatedFrozenV2BalanceForBandwidth / Math.pow(10,6)
+    useEffect(() => {
+        if (delegatedBandwidthInfo && bandwidthDelegatedByOthers === 0) {
+            delegatedBandwidthInfo.forEach((element) => {
+                if (element.resource === 0) {
+                    setBandwidthDelegatedByOthers((prev) => prev + element.resourceValue)
+                }
+            })
+        }
+    }, [delegatedBandwidthInfo])
+    useEffect(() => {
+
+        const frozenTrxForBandwidthDelegation = bandwidthInfo.delegatedFrozenV2BalanceForBandwidth / Math.pow(10, 6)
         const delegatedToOthers = frozenTrxForBandwidthDelegation * bandwidthInfo.netCost
         setBandwidthDelegatedToOthers(delegatedToOthers)
 
-        const balanceFrozenForBandwidthV2 = bandwidthInfo.frozenForBandWidthV2 / Math.pow(10,6)
-        const bandwidthGainedFromStaking = balanceFrozenForBandwidthV2 * bandwidthInfo.netCost
+
+
+        const bandwidthGainedFromStaking = (bandwidthInfo.bandwidth.netLimit + delegatedToOthers) - bandwidthDelegatedByOthers
         setBandwidthFromStaking(bandwidthGainedFromStaking)
 
-        if( Math.round(bandwidthInfo.bandwidth.netLimit - bandwidthGainedFromStaking) < 1 ){
-            setBandwidthDelegatedByOthers(0)
-        }else{
-            const delegatedByOthers = bandwidthInfo.bandwidth.netLimit - bandwidthGainedFromStaking + delegatedToOthers
-            setBandwidthDelegatedByOthers(delegatedByOthers)
-        }
-},[bandwidthInfo])
 
-    const remainingPercentage =  Math.round((bandwidthInfo.bandwidth.netRemaining / bandwidthInfo.bandwidth.netLimit) * 100)
-            
-  return (
-    <BandwidthCardWrapper>
-           <p className='content-header'>
+    }, [bandwidthInfo, bandwidthDelegatedByOthers])
+
+    const remainingPercentage = Math.round((bandwidthInfo.bandwidth.netRemaining / bandwidthInfo.bandwidth.netLimit) * 100)
+
+    return (
+        <BandwidthCardWrapper>
+            <p className='content-header'>
                 Bandwidth
             </p>
 
             <div className='flex-row'>
                 <div>
-                <SemiCircleProgress
-                    percentage={remainingPercentage}
-                    size={{
-                        width: 120,
-                        height: 120,
-                    }}
-                    strokeWidth={5}
-                    strokeColor="rgb(37, 210, 198)"
+                    <SemiCircleProgress
+                        percentage={remainingPercentage}
+                        size={{
+                            width: 120,
+                            height: 120,
+                        }}
+                        strokeWidth={5}
+                        strokeColor="rgb(37, 210, 198)"
                     />
-                    </div>
+                </div>
                 <div className='detail-box'>
                     <div className='flex-row'>
                         <p className='key'>
@@ -75,11 +81,11 @@ const BandwidthCard = ({bandwidthInfo}) => {
             </div>
             <div className='flex-row'>
                 <p>
-                    Total ≈  {bandwidthInfo.bandwidth.netLimit} 
+                    Total ≈ <span> {bandwidthInfo.bandwidth.netLimit} </span>
                 </p>
                 <div className='button-box'>
-                    <button className='get-button' onClick={()=>setShowResourceModal(true)}>Get Bandwidth</button>
-                    <button className='delegate-button'  onClick={()=>setDelegateShowModal(true)}>Delegate to others</button>
+                    <button className='get-button' onClick={() => setShowResourceModal(true)}>Get Bandwidth</button>
+                    <button className='delegate-button' onClick={() => setDelegateShowModal(true)}>Delegate to others</button>
 
                 </div>
             </div>
@@ -87,8 +93,8 @@ const BandwidthCard = ({bandwidthInfo}) => {
             {showResourceModal && <ResourceModal showModal={showResourceModal} setShowModal={setShowResourceModal} index={1} />}
             {showDelegateModal && <DelegateResourcesModal showModal={showDelegateModal} setShowModal={setDelegateShowModal} index={1} />}
 
-    </BandwidthCardWrapper>
-  )
+        </BandwidthCardWrapper>
+    )
 }
 
 export default BandwidthCard

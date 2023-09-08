@@ -19,7 +19,6 @@ export async function getFrozenEnergyRatio() {
     try {
         const tronStation = new TronStation(tronWeb, true);
         const res = await tronStation.energy.trx2FrozenEnergy(1);
-        console.log("res from api" , res);
         return res
     } catch (error) {
       console.error('Error fetching user transactions:', error);

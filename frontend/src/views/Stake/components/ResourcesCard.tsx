@@ -23,136 +23,135 @@ const ResourcesCard = () => {
   const [resourcesInfo, setResourcesInfo] = React.useState<any>(null)
   const [gotInfo, setGotInfo] = React.useState<boolean>(false)
   const [activeIndex, setActiveIndex] = React.useState<number>(0)
-  const [activeIndexData  , setActiveIndexData] = React.useState<any>([])
-  const [tableData , setTableData] = React.useState<any>([])
-  const [loading , setLoading] = React.useState<boolean>(false)
-  const [contractInfo , setContractInfo] = React.useState<any>([])
+  const [activeIndexData, setActiveIndexData] = React.useState<any>([])
+  const [tableData, setTableData] = React.useState<any>([])
+  const [loading, setLoading] = React.useState<boolean>(false)
+  const [contractInfo, setContractInfo] = React.useState<any>([])
+  const [delegatedByOthersResourceInfo, setDelegatedByOthersResourceInfo] = React.useState<any>([])
 
   useEffect(() => {
     if (!walletAddress) return
     const fetch = async () => {
       showLoader()
-      const get = await getUserResourceInfo(walletAddress)
-      setResourcesInfo(get)
+      const [resourceInfo , delegatedByOthersInfo ] = await Promise.all([getUserResourceInfo(walletAddress) , getDelegatedResourceData(walletAddress)])
+      setResourcesInfo(resourceInfo)
+      setDelegatedByOthersResourceInfo(delegatedByOthersInfo.data)
       hideLoader()
       setGotInfo(true)
-      console.log(get)
     }
     fetch()
 
   }, [walletAddress])
 
-    useEffect(() => {
-      const fetch = async () => {
-        setLoading(true)
-        if(activeIndex === 0 ){
-          const get = await getResourceDataFromStaking(walletAddress)
-          console.log(get.data)
-          setActiveIndexData(get.data)
-        }else if(activeIndex === 1){
-          const get = await getDelegatedResourceData(walletAddress)
-          console.log(get.data)
-          setActiveIndexData(get.data)
-          setContractInfo(get.contractInfo)
-      }else{
+  useEffect(() => {
+    if (!walletAddress) return
+    const fetch = async () => {
+      setLoading(true)
+      if (activeIndex === 0) {
+        const get = await getResourceDataFromStaking(walletAddress)
+        setActiveIndexData(get.data)
+      } else if (activeIndex === 1) {
+        const get = await getDelegatedResourceData(walletAddress)
+        setActiveIndexData(get.data)
+        setContractInfo(get.contractInfo)
+      } else {
         const get = await getDelegatedToResourceData(walletAddress)
-          console.log(get.data)
         setActiveIndexData(get.data)
         setContractInfo(get.contractInfo)
       }
       setLoading(false)
     }
     fetch()
-    },[walletAddress , activeIndex])
+  }, [walletAddress, activeIndex])
 
 
-    useEffect(()=>{ 
-      if(!walletAddress || !activeIndexData){ return}
-      else{
+  useEffect(() => {
+    if (!walletAddress || !activeIndexData) { return }
+    else {
 
-        switch (activeIndex) {
-          case 0:
-            const mappedData0 = activeIndexData.map((item) => {
-              const resourceType = item.resource === 0 ? "Bandwidth" : "Energy";
-              const resourceAmount = item.resourceValue;
-              const stakedAsset = `${item.balance / Math.pow(10, 6)} TRX`;
-              const lastUpdatedAt = new Date(item.operationTime).toLocaleString();
-              const action = "Unstake";
-        
-              return {
-                "Resource Type": resourceType,
-                "Resource Amount": resourceAmount,
-                "Staked Asset": stakedAsset,
-                "Last Updated At": lastUpdatedAt,
-                "Action": action,
-              };
-            });
-            setTableData(mappedData0)
+      switch (activeIndex) {
+        case 0:
+          const mappedData0 = activeIndexData.map((item) => {
+            const resourceType = item.resource === 0 ? "Bandwidth" : "Energy";
+            const resourceAmount = item.resourceValue;
+            const stakedAsset = `${item.balance / Math.pow(10, 6)} TRX`;
+            const lastUpdatedAt = new Date(item.operationTime).toLocaleString();
+            const action = "Unstake";
 
-            break;
-        
-          case 1:
-            const mappedData1 = activeIndexData.map((item) => {
-              const resourceType = item.resource === 0 ? "Bandwidth" : "Energy";
-              const resourceAmount = item.resourceValue;
-              const stakedAsset = `${item.balance / Math.pow(10, 6)} TRX`;
-              const lastUpdatedAt = new Date(item.operationTime).toLocaleString();
-              const senderAddress = item.ownerAddress;
-              const recieverAddress = item.receiverAddress;
-              const unlocksAt = item.expireTime === 0 ? "- -":  new Date(item.expireTime).toLocaleString();
-        
-              return {
-                "Resource Type": resourceType,
-                "From": senderAddress,
-                "To": recieverAddress,
-                "Resource Amount": resourceAmount,
-                "Unlocks At": unlocksAt,
-                "Staked Asset": stakedAsset,
-                "Last Updated At": lastUpdatedAt,
-              };
-            });
-            setTableData(mappedData1)
-            break;
-        
-          case 2:
-            const mappedData2 = activeIndexData.map((item) => {
-              const resourceType = item.resource === 0 ? "Bandwidth" : "Energy";
-              const resourceAmount = item.resourceValue;
-              const stakedAsset = `${item.balance / Math.pow(10, 6)} TRX`;
-              const lastUpdatedAt = new Date(item.operationTime).toLocaleString();
-              const senderAddress = item.ownerAddress;
-              const recieverAddress = item.receiverAddress;
-              const unlocksAt = item.expireTime === 0 ? "- -":  new Date(item.expireTime).toLocaleString();
-              const action  = "Reclaim"
-        
-              return {
-                "Resource Type": resourceType,
-                "From": senderAddress,
-                "To": recieverAddress,
-                "Resource Amount": resourceAmount,
-                "Unlocks At": unlocksAt,
-                "Staked Asset": stakedAsset,
-                "Last Updated At": lastUpdatedAt,
-                "Action": action,
-              };
-            });
-            setTableData(mappedData2)
-            break;
-        
-          default:
-            // Handle the default case (if activeIndexData is none of 0, 1, or 2)
-        }
-  
-  }
-  },[activeIndexData])
+            return {
+              "Resource Type": resourceType,
+              "Resource Amount": resourceAmount,
+              "Staked Asset": stakedAsset,
+              "Last Updated At": lastUpdatedAt,
+              "Action": action,
+            };
+          });
+          setTableData(mappedData0)
+
+          break;
+
+        case 1:
+          const mappedData1 = activeIndexData.map((item) => {
+            const resourceType = item.resource === 0 ? "Bandwidth" : "Energy";
+            const resourceAmount = item.resourceValue;
+            const stakedAsset = `${item.balance / Math.pow(10, 6)} TRX`;
+            const lastUpdatedAt = new Date(item.operationTime).toLocaleString();
+            const senderAddress = item.ownerAddress;
+            const recieverAddress = item.receiverAddress;
+            const unlocksAt = item.expireTime === 0 ? "- -" : new Date(item.expireTime).toLocaleString();
+
+            return {
+              "Resource Type": resourceType,
+              "From": senderAddress,
+              "To": recieverAddress,
+              "Resource Amount": resourceAmount,
+              "Unlocks At": unlocksAt,
+              "Staked Asset": stakedAsset,
+              "Last Updated At": lastUpdatedAt,
+            };
+          });
+          setTableData(mappedData1)
+          break;
+
+        case 2:
+          const mappedData2 = activeIndexData.map((item) => {
+            const resourceType = item.resource === 0 ? "Bandwidth" : "Energy";
+            const resourceAmount = item.resourceValue;
+            const stakedAsset = `${item.balance / Math.pow(10, 6)} TRX`;
+            const lastUpdatedAt = new Date(item.operationTime).toLocaleString();
+            const senderAddress = item.ownerAddress;
+            const recieverAddress = item.receiverAddress;
+            const unlocksAt = item.expireTime === 0 ? "- -" : new Date(item.expireTime).toLocaleString();
+            const action = "Reclaim"
+
+            return {
+              "Resource Type": resourceType,
+              "From": senderAddress,
+              "To": recieverAddress,
+              "Resource Amount": resourceAmount,
+              "Unlocks At": unlocksAt,
+              "Staked Asset": stakedAsset,
+              "Last Updated At": lastUpdatedAt,
+              "Action": action,
+            };
+          });
+          setTableData(mappedData2)
+          break;
+
+        default:
+        // Handle the default case (if activeIndexData is none of 0, 1, or 2)
+      }
+
+    }
+  }, [activeIndexData])
 
   const TableRender = () => {
-    if(tableData.length === 0 ) {return <p>No Data Found</p>}
-    else if(activeIndex === 0){
+    if (tableData.length === 0) { return <p>No Data Found</p> }
+    else if (activeIndex === 0) {
       return <StakingTable data={tableData} index={activeIndex} />
-    }else if(activeIndex === 1){
-      return <DelegatedByOthersTable data={tableData} contractInfo={contractInfo} />  
-    }else{
+    } else if (activeIndex === 1) {
+      return <DelegatedByOthersTable data={tableData} contractInfo={contractInfo} />
+    } else {
       return <DelegatedToOthersTable data={tableData} contractInfo={contractInfo} />
     }
   }
@@ -188,34 +187,34 @@ const ResourcesCard = () => {
       </p>
 
       <div className='main-flex'>
-        <EnergyCard energyInfo={resourcesInfo} />
-        <BandwidthCard bandwidthInfo={resourcesInfo} />
+        <EnergyCard energyInfo={resourcesInfo} delegatedEnergyInfo={delegatedByOthersResourceInfo} />
+        <BandwidthCard bandwidthInfo={resourcesInfo} delegatedBandwidthInfo={delegatedByOthersResourceInfo} />
       </div>
       <div className='total-resources'>
         <p>  Resources Overview</p>
 
         <div className='tabs'>
-          <button className={activeIndex === 0 ? "active" : ""} onClick={()=>setActiveIndex(0)}>From Staking</button>
-          <button className={activeIndex === 1 ? "active" : ""} onClick={()=>setActiveIndex(1)}>Delegated by others</button>
-          <button className={activeIndex === 2 ? "active" : ""} onClick={()=>setActiveIndex(2)}>Delegated to others</button>
+          <button className={activeIndex === 0 ? "active" : ""} onClick={() => setActiveIndex(0)}>From Staking</button>
+          <button className={activeIndex === 1 ? "active" : ""} onClick={() => setActiveIndex(1)}>Delegated by others</button>
+          <button className={activeIndex === 2 ? "active" : ""} onClick={() => setActiveIndex(2)}>Delegated to others</button>
         </div>
-      {loading ?      <div className='loader-wrapper'>
+        {loading ? <div className='loader-wrapper'>
 
-<ThreeDots
-  height="50"
-  width="50"
-  radius="9"
-  color=" rgb(56, 136, 255)"
-  ariaLabel="three-dots-loading"
-  wrapperStyle={{
-    paddingLeft: '10px',
-    paddingRight: '15px',
-  }}
-  visible={true} />
-</div> :
+          <ThreeDots
+            height="50"
+            width="50"
+            radius="9"
+            color=" rgb(56, 136, 255)"
+            ariaLabel="three-dots-loading"
+            wrapperStyle={{
+              paddingLeft: '10px',
+              paddingRight: '15px',
+            }}
+            visible={true} />
+        </div> :
 
-        <TableRender/>
-}
+          <TableRender />
+        }
 
       </div>
 

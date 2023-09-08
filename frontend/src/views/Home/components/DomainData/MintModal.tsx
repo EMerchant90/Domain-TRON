@@ -7,6 +7,7 @@ import { GetEstimatedFee } from 'utils/web3/getTransactionEstimate';
 import { buyDomain } from 'contract/tnsContractInteraction';
 import { getUserEnergy } from 'utils/web3/getWalletEnergy';
 import CircledQuestion from 'components/Icons/CircledQuestionMark/CircledQuestion';
+import { getUserBandwidth } from 'utils/web3/getWalletBandwidth';
 
 const MintModal = ({ showModal, setShowModal, item }) => {
   const walletAdress = useTronWalletAddress();
@@ -15,28 +16,55 @@ const MintModal = ({ showModal, setShowModal, item }) => {
   const [estimatedEnergy, setEstimatedEnergy] = React.useState(0);
   const [estimatedBandwidth, setEstimatedBandwidth] = React.useState(0);
   const [estimatedTrx, setEstimatedTrx] = React.useState(0);
-  const [userEnergy, setUserEnergy] = React.useState({ EnergyLimit: 0, EnergyUsed: 0 });
+  const [userEnergy, setUserEnergy] = React.useState({ EnergyLimit: 0, EnergyUsed: 0, NetLimit: 0, NetUsed: 0 });
   const [loading, setLoading] = React.useState(true);
+  const [userBandwidth, setUserBandwidth] = React.useState(0)
+
   const unitPricePerEnergy = 0.000420394;
+  const unitPricePerBandwidth = 0.1 / 1000000
 
   useEffect(() => {
     if (estimatedEnergy != 0) return
     const fetch = async () => {
-      const userEnergy = await getUserEnergy(walletAdress);
-      const get = await GetEstimatedFee(walletAdress, item);
-      setLoading(false)
+      const [userEnergy, userBandwidth, estimatedFee] = await Promise.all([
+        getUserEnergy(walletAdress),
+        getUserBandwidth(walletAdress),
+        GetEstimatedFee(walletAdress, item)
+      ])
 
+      setUserBandwidth(userBandwidth)
       setUserEnergy(userEnergy)
-      setEstimatedEnergy(get.energy)
-      setEstimatedBandwidth(get.bandwidth)
+      setEstimatedEnergy(estimatedFee.energy)
+      setEstimatedBandwidth(estimatedFee.bandwidth)
+      setLoading(false)
     }
     fetch();
 
   }, [])
 
   useEffect(() => {
-    setEstimatedTrx((estimatedEnergy - (userEnergy.EnergyLimit - userEnergy.EnergyUsed)) * unitPricePerEnergy)
-  }, [estimatedEnergy])
+    const energyUsed = userEnergy.EnergyUsed || 0;
+    const bandwidthUsed = userEnergy.NetUsed || 0;
+
+    const energyExceeded = estimatedEnergy > userEnergy.EnergyLimit - energyUsed;
+    const bandwidthExceeded = estimatedBandwidth > userEnergy.NetLimit - bandwidthUsed;
+
+    const trxRequiredForEnergy = energyExceeded
+      ? (estimatedEnergy - (userEnergy.EnergyLimit - energyUsed)) * unitPricePerEnergy
+      : 0;
+
+    const trxRequiredForBandwidth = bandwidthExceeded
+      ? (estimatedBandwidth - (userEnergy.NetLimit - bandwidthUsed)) * unitPricePerBandwidth
+      : 0;
+
+    const totalTrxRequired = trxRequiredForEnergy + trxRequiredForBandwidth;
+    if (Object.values(userEnergy).every((val) => val === 0)) {
+      setEstimatedTrx((estimatedEnergy * unitPricePerEnergy) + (estimatedBandwidth * unitPricePerBandwidth));
+    }else{
+      setEstimatedTrx(totalTrxRequired);
+    }
+  }, [estimatedEnergy, estimatedBandwidth, userEnergy, userBandwidth, unitPricePerEnergy, unitPricePerBandwidth]);
+
 
   const handleMintDomain = () => {
     showLoader();
@@ -47,6 +75,7 @@ const MintModal = ({ showModal, setShowModal, item }) => {
     });
 
   }
+
 
   return (
     <Modal show={showModal} title={"Mint"} changeModal={setShowModal}>
@@ -76,7 +105,7 @@ const MintModal = ({ showModal, setShowModal, item }) => {
           </div>
           <div className=' expected-price-box flex-between '>
             <p >Estimated TRX Consumption </p>
-            <span>{`${estimatedTrx ? estimatedTrx : "0"} TRX`}</span>
+            <span>{`${estimatedTrx && estimatedTrx > 0 ? estimatedTrx.toFixed(2) : "0"} TRX`}</span>
           </div>
         </div>
 

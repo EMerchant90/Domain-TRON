@@ -4,32 +4,38 @@ import { SemiCircleProgress } from "react-semicircle-progressbar"
 import ResourceModal from './Modals/ResourceModal'
 import DelegateResourcesModal from './Modals/DelegateResourcesModal'
 
-const EnergyCard = ({ energyInfo }) => {
+const EnergyCard = ({ energyInfo  , delegatedEnergyInfo}) => {
     const [showResourceModal, setShowResourceModal] = React.useState(false);
     const [showDelegateModal, setDelegateShowModal] = React.useState(false);
     const [energyDelegatedToOthers, setEnergyDelegatedToOthers] = React.useState(0)
     const [energyFromStaking , setEnergyFromStaking] = React.useState(0)
     const [energyDelegatedByOthers  , setEnergyDelegatedByOthers] = React.useState(0)
+   
 
     useEffect(()=>{
+            if(delegatedEnergyInfo && energyDelegatedByOthers ===0 ){
+                delegatedEnergyInfo.forEach((element)=>{
+                    if(element.resource === 1){
+                        setEnergyDelegatedByOthers((prev)=>prev + element.resourceValue)
+                    }
+                })
+            }
+    },[delegatedEnergyInfo])
 
+    useEffect(()=>{
             const frozenTrxForEnergyDelegation = energyInfo.delegatedFrozenV2BalanceForEnergy / Math.pow(10,6)
             const delegatedToOthers = frozenTrxForEnergyDelegation * energyInfo.energyCost
             setEnergyDelegatedToOthers(delegatedToOthers)
 
-            const trxForEnergyStaking = energyInfo.totalFrozenV2 - energyInfo.frozenForBandWidthV2 
-            const balanceFrozenForEnergyV2 = trxForEnergyStaking / Math.pow(10,6)
-            const energyGainedFromStaking = balanceFrozenForEnergyV2 * energyInfo.energyCost
+            const energyGainedFromStaking = (energyInfo.bandwidth.energyLimit + delegatedToOthers) - energyDelegatedByOthers
             setEnergyFromStaking(energyGainedFromStaking)
-
-            const delegatedByOthers = energyInfo.bandwidth.energyLimit - energyGainedFromStaking + delegatedToOthers
-            setEnergyDelegatedByOthers(delegatedByOthers)
  
-    },[energyInfo])
+    },[energyInfo ,energyDelegatedByOthers])
+
 
     const remainingEnergy = () => {
         if (energyInfo) {
-            return (energyInfo.bandwidth.energyRemaining / energyInfo.bandwidth.energyLimit) * 100
+            return Math.round((energyInfo.bandwidth.energyRemaining / energyInfo.bandwidth.energyLimit) * 100)
         }
     }
 
@@ -74,11 +80,11 @@ const EnergyCard = ({ energyInfo }) => {
             </div>
             <div className='flex-row'>
                 <p>
-                    Total ≈ {energyInfo ? energyInfo.bandwidth.energyLimit : "--"}
+                    Total ≈ <span> {energyInfo ? energyInfo.bandwidth.energyLimit : "--"}</span>
                 </p>
 
                 <div className='button-box'>
-                    <button className='get-button' onClick={() => setShowResourceModal(true)}>Get Energy</button>
+                    <button  className='get-button' onClick={() => setShowResourceModal(true)}>Get Energy</button>
                     <button className='delegate-button' onClick={() => setDelegateShowModal(true)}>Delegate to others</button>
                 </div>
             </div>

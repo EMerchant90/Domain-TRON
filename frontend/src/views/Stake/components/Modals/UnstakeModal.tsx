@@ -32,7 +32,6 @@ const UnstakeModal = ({ showModal, setShowModal, data }) => {
 
             const sign = await window.tronWeb.trx.sign(method);
             const transaction = await window.tronWeb.trx.sendRawTransaction(sign);
-            console.log("transaction",transaction)
 
             setShowModal(false)
             hideLoader()

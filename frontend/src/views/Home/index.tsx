@@ -9,7 +9,7 @@ import {TNS_CONTRACT_ADDRESS } from "../../config/constants";
 import tnsAbi from '../../config/abi/tns.json';
 import {useTLDs} from "../../state/tlds/hooks";
 import {useDebouncedChangeHandler} from "../../hooks/useDebounced";
-
+import {toast} from "react-toastify";
 export interface IDomainInfo {
   domain: string
   tld: string
@@ -40,6 +40,10 @@ const Home: React.FC = () => {
   },[debouncedSearchValue])
 
   const handleSearch = async (value: string) => {
+    if (window.tronWeb && !window.tronWeb.ready) {
+      toast('Please Unlock Tron Web First');
+      return
+    }
     if (value.trim() !== '') {
       setLoading(true);
       try {
