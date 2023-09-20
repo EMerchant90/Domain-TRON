@@ -1,16 +1,41 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { SemiCircleProgress } from "react-semicircle-progressbar"
-import ResourceModal from './ResourceModal'
-import DelegateResourcesModal from './DelegateResourcesModal'
+import ResourceModal from './Modals/ResourceModal'
+import DelegateResourcesModal from './Modals/DelegateResourcesModal'
 
-const EnergyCard = ({ energyInfo }) => {
+const EnergyCard = ({ energyInfo  , delegatedEnergyInfo}) => {
     const [showResourceModal, setShowResourceModal] = React.useState(false);
     const [showDelegateModal, setDelegateShowModal] = React.useState(false);
+    const [energyDelegatedToOthers, setEnergyDelegatedToOthers] = React.useState(0)
+    const [energyFromStaking , setEnergyFromStaking] = React.useState(0)
+    const [energyDelegatedByOthers  , setEnergyDelegatedByOthers] = React.useState(0)
+   
+
+    useEffect(()=>{
+            if(delegatedEnergyInfo && energyDelegatedByOthers ===0 ){
+                delegatedEnergyInfo.forEach((element)=>{
+                    if(element.resource === 1){
+                        setEnergyDelegatedByOthers((prev)=>prev + element.resourceValue)
+                    }
+                })
+            }
+    },[delegatedEnergyInfo])
+
+    useEffect(()=>{
+            const frozenTrxForEnergyDelegation = energyInfo.delegatedFrozenV2BalanceForEnergy / Math.pow(10,6)
+            const delegatedToOthers = frozenTrxForEnergyDelegation * energyInfo.energyCost
+            setEnergyDelegatedToOthers(delegatedToOthers)
+
+            const energyGainedFromStaking = (energyInfo.bandwidth.energyLimit + delegatedToOthers) - energyDelegatedByOthers
+            setEnergyFromStaking(energyGainedFromStaking)
+ 
+    },[energyInfo ,energyDelegatedByOthers])
+
 
     const remainingEnergy = () => {
         if (energyInfo) {
-            return (energyInfo.energyRemaining / energyInfo.energyLimit) * 100
+            return Math.round((energyInfo.bandwidth.energyRemaining / energyInfo.bandwidth.energyLimit) * 100)
         }
     }
 
@@ -36,30 +61,30 @@ const EnergyCard = ({ energyInfo }) => {
                         <p className='key'>
                             <span className='colored-box' />
                             From Staking</p>
-                        <span className='value'>+81000</span>
+                        <span className='value'>+{energyFromStaking.toFixed(2)}</span>
                     </div>
                     <div className='flex-row'>
                         <p className='key'>
                             <span className='colored-box' />
                             Delegated by others</p>
-                        <span className='value'>+50000</span>
+                        <span className='value'>+{energyDelegatedByOthers.toFixed(2)}</span>
                     </div>
                     <div className='flex-row'>
                         <p className='key'>
                             <span className='colored-box' />
                             Delegated to others</p>
-                        <span className='value'>-10000</span>
+                        <span className='value'>-{energyDelegatedToOthers.toFixed(2)}</span>
                     </div>
                 </div>
 
             </div>
             <div className='flex-row'>
                 <p>
-                    Total ≈ {energyInfo ? energyInfo.energyLimit : "--"}
+                    Total ≈ <span> {energyInfo ? energyInfo.bandwidth.energyLimit : "--"}</span>
                 </p>
 
                 <div className='button-box'>
-                    <button className='get-button' onClick={() => setShowResourceModal(true)}>Get Energy</button>
+                    <button  className='get-button' onClick={() => setShowResourceModal(true)}>Get Energy</button>
                     <button className='delegate-button' onClick={() => setDelegateShowModal(true)}>Delegate to others</button>
                 </div>
             </div>
@@ -99,10 +124,10 @@ margin-right:20px;
     display:flex;
     flex-direction:column;
     margin-left:20px;
-    width:60%;
 }
 .key{
     margin:0;
+    min-width: 190px;
     color: #73787b;
     font-size: 14px;
     font-weight: 400;
@@ -120,7 +145,7 @@ margin-right:20px;
 
 .value{
     margin:0;
-    font-size: 14px;
+    font-size: 14px !important;
     font-weight: 600;
     color: #101010;
     margin-bottom:10px;

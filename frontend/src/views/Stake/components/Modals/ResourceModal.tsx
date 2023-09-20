@@ -67,7 +67,8 @@ const ResourceModal = ({ showModal, setShowModal, index }) => {
 
             setShowModal(false)
             hideLoader()
-            sweetAlertService.showSuccessAlert("Transaction successfull", `You successfully staked your TRX for ${index === 0 ? "ENERGY" : "BANDWIDTH"}`, transaction.txid)
+            const explorerLink = `https://nile.tronscan.org/#/transaction/${transaction.txID}`
+            sweetAlertService.showSuccessAlert("Transaction successfull", `You successfully staked your TRX for ${index === 0 ? "ENERGY" : "BANDWIDTH"}`,explorerLink)
         } catch (err: any) {
             console.log(err)
             hideLoader()

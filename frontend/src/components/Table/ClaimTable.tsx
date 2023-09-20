@@ -1,10 +1,10 @@
-import CountdownTimer from 'components/CountDownTimer/CountDownTimer';
 import React from 'react';
 import styled from 'styled-components';
 import { claimUnstakedTrx } from 'contract/contractInteraction';
 import { useTronWalletAddress } from 'state/user/hooks';
 import { useCountDown } from 'hooks/useCountDown';
-import { log } from 'console';
+import sweetAlertService from 'utils/SweetAlertServices/sweetAlertServices';
+
 
 
 const ClaimTable = ({ data }) => {
@@ -12,22 +12,16 @@ const ClaimTable = ({ data }) => {
   const walletAddress = useTronWalletAddress();
 
   const claimHandler = async (index) => {
-    const result = await claimUnstakedTrx(walletAddress, index);
-    console.log(result)
+    try{
 
+      const result = await claimUnstakedTrx(walletAddress, index);
+      console.log(result)
+      const explorerLink = `https://nile.tronscan.org/#/transaction/${result}`
+      sweetAlertService.showSuccessAlert('Success', "You succesfully claimed your TRX", explorerLink);    
+    }catch(error:any){
+      const errorMessage = error.message ? error.message : 'Transaction failed';
+      sweetAlertService.showErrorAlert('Error', errorMessage);    }
   }
-
-
-  // const HandleCountDown = (cp) => {
-
-
-  //   return (
-  //     <div className='countdown-date'>
-  //       {time !== 0 ? counter : "Claim now"}
-  //     </div>
-
-  //   )
-  // }
 
   const HandleCountDown1 = ({item, index}) => {
     const { counter, isEnded } = useCountDown({ targetTimestamp: item['claimTime'].toNumber() });
@@ -38,14 +32,16 @@ const ClaimTable = ({ data }) => {
       <td>{`${item['tronAmount'].toNumber()} TRX`}</td>
       <td>
         <div className='countdown-date'>
-           {!isEnded ? counter : "Claim now"}
+           {!isEnded ? counter : "Available"}
       </div>
       </td>
       <td>
         {item['claimed'] === false ? "Not Claimed" : "Claimed"}
       </td>
       <td>
-        <button disabled={!isEnded} onClick={() => claimHandler((index))}>Claim</button>
+      {!item['claimed']  && <button disabled={!isEnded} onClick={() => claimHandler((index))}>Claim</button>}
+         {item['claimed'] && <button disabled={item['claimed']} >Claimed</button>}
+
       </td>
     </tr>
     )

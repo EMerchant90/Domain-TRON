@@ -14,7 +14,6 @@ const StakePage = () => {
             <p className='heading-description'>
                 Eliminate fee of transactions while getting rewards by voting with TRON Power
             </p>
-
             <ResourcesCard/>
         </StakePageWrapper>
     )
@@ -25,10 +24,11 @@ export default StakePage
 const StakePageWrapper = styled.div`
 margin-top: 50px;
 font-family : 'Roboto', sans-serif;
-height:75vh;
+min-height:75vh;
 display:flex;
 flex-direction:column;
-
+margin-bottom:50px;
+min-width: 1100px;  
 & .heading{
     display:flex;
     flex-direction:row;

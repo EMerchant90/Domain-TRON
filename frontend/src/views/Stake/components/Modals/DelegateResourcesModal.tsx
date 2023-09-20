@@ -29,7 +29,6 @@ const DelegateResourcesModal = ({ showModal, setShowModal, index }) => {
     useEffect(() => {
         const fetch = async () => {
             showLoader()
-            console.log("res")
             if (index === 0) {
                 const res = await getFrozenEnergyRatio();
                 setEnergyPerTrx(res)

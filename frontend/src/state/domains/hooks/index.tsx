@@ -40,7 +40,6 @@ export function useSyncTLDs() {
         
         let tnsContract = await tronWeb.contract(tnsAbi, TNS_CONTRACT_ADDRESS);
         const tlds = await tnsContract.getAllTlds().call();
-        console.info("all tlds", tlds)
         dispatch(updateTLDs({tlds}))
       } catch (e) {
         console.error(e)

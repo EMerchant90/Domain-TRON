@@ -1,63 +1,91 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { SemiCircleProgress } from "react-semicircle-progressbar"
-import ResourceModal from './ResourceModal'
-import DelegateResourcesModal from './DelegateResourcesModal'
+import ResourceModal from './Modals/ResourceModal'
+import DelegateResourcesModal from './Modals/DelegateResourcesModal'
 
 
-const BandwidthCard = ({bandwidthInfo}) => {
+const BandwidthCard = ({ bandwidthInfo, delegatedBandwidthInfo }) => {
     const [showResourceModal, setShowResourceModal] = React.useState(false);
     const [showDelegateModal, setDelegateShowModal] = React.useState(false);
 
-    const remainingPercentage =  Math.round((bandwidthInfo.netRemaining / bandwidthInfo.netLimit) * 100)
-            
-  return (
-    <BandwidthCardWrapper>
-           <p className='content-header'>
+    const [bandwidthDelegatedToOthers, setBandwidthDelegatedToOthers] = React.useState(0)
+    const [bandwidthFromStaking, setBandwidthFromStaking] = React.useState(0)
+    const [bandwidthDelegatedByOthers, setBandwidthDelegatedByOthers] = React.useState(0)
+
+
+    useEffect(() => {
+        if (delegatedBandwidthInfo && bandwidthDelegatedByOthers === 0) {
+            delegatedBandwidthInfo.forEach((element) => {
+                if (element.resource === 0) {
+                    setBandwidthDelegatedByOthers((prev) => prev + element.resourceValue)
+                }
+            })
+        }
+    }, [delegatedBandwidthInfo])
+    useEffect(() => {
+
+        const frozenTrxForBandwidthDelegation = bandwidthInfo.delegatedFrozenV2BalanceForBandwidth / Math.pow(10, 6)
+        const delegatedToOthers = frozenTrxForBandwidthDelegation * bandwidthInfo.netCost
+        setBandwidthDelegatedToOthers(delegatedToOthers)
+
+
+
+        const bandwidthGainedFromStaking = (bandwidthInfo.bandwidth.netLimit + delegatedToOthers) - bandwidthDelegatedByOthers
+        setBandwidthFromStaking(bandwidthGainedFromStaking)
+
+
+    }, [bandwidthInfo, bandwidthDelegatedByOthers])
+
+    const remainingPercentage = Math.round((bandwidthInfo.bandwidth.netRemaining / bandwidthInfo.bandwidth.netLimit) * 100)
+
+    return (
+        <BandwidthCardWrapper>
+            <p className='content-header'>
                 Bandwidth
             </p>
 
             <div className='flex-row'>
                 <div>
-                <SemiCircleProgress
-                    percentage={remainingPercentage}
-                    size={{
-                        width: 120,
-                        height: 120,
-                    }}
-                    strokeWidth={5}
-                    strokeColor="rgb(37, 210, 198)"
+                    <SemiCircleProgress
+                        percentage={remainingPercentage}
+                        size={{
+                            width: 120,
+                            height: 120,
+                        }}
+                        strokeWidth={5}
+                        strokeColor="rgb(37, 210, 198)"
                     />
-                    </div>
+                </div>
                 <div className='detail-box'>
                     <div className='flex-row'>
                         <p className='key'>
                             <span className='colored-box' />
                             From Staking</p>
-                        <span className='value'>+81000</span>
+                        <span className='value'>+{bandwidthFromStaking.toFixed(2)}</span>
                     </div>
                     <div className='flex-row'>
                         <p className='key'>
                             <span className='colored-box' />
                             Delegated by others</p>
-                        <span className='value'>+50000</span>
+                        <span className='value'>+{bandwidthDelegatedByOthers}</span>
                     </div>
                     <div className='flex-row'>
                         <p className='key'>
                             <span className='colored-box' />
                             Delegated to others</p>
-                        <span className='value'>-10000</span>
+                        <span className='value'>-{bandwidthDelegatedToOthers.toFixed(2)}</span>
                     </div>
                 </div>
 
             </div>
             <div className='flex-row'>
                 <p>
-                    Total ≈  {bandwidthInfo.netLimit} 
+                    Total ≈ <span> {bandwidthInfo.bandwidth.netLimit} </span>
                 </p>
                 <div className='button-box'>
-                    <button className='get-button' onClick={()=>setShowResourceModal(true)}>Get Bandwidth</button>
-                    <button className='delegate-button'  onClick={()=>setDelegateShowModal(true)}>Delegate to others</button>
+                    <button className='get-button' onClick={() => setShowResourceModal(true)}>Get Bandwidth</button>
+                    <button className='delegate-button' onClick={() => setDelegateShowModal(true)}>Delegate to others</button>
 
                 </div>
             </div>
@@ -65,8 +93,8 @@ const BandwidthCard = ({bandwidthInfo}) => {
             {showResourceModal && <ResourceModal showModal={showResourceModal} setShowModal={setShowResourceModal} index={1} />}
             {showDelegateModal && <DelegateResourcesModal showModal={showDelegateModal} setShowModal={setDelegateShowModal} index={1} />}
 
-    </BandwidthCardWrapper>
-  )
+        </BandwidthCardWrapper>
+    )
 }
 
 export default BandwidthCard
@@ -100,10 +128,10 @@ flex-direction:column;
     display:flex;
     flex-direction:column;
     margin-left:20px;
-    width:60%;
 }
 .key{
     margin:0;
+    min-width: 190px;
     color: #73787b;
     font-size: 14px;
     font-weight: 400;
@@ -121,7 +149,7 @@ flex-direction:column;
 
 .value{
     margin:0;
-    font-size: 14px;
+    font-size: 14px !important;
     font-weight: 600;
     color: #101010;
     margin-bottom:10px;

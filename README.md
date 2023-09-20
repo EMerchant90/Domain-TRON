@@ -69,6 +69,7 @@ We need to add local network in TronLink. for this open TronLink extension in ch
 <br>
 ![img.png](img.png)
 
+**Please Make Sure Host name should be only http not https.**
 
 Once node setup we need to import private key in TronLink so we can use test balance for transaction fee.
 <br><br>
